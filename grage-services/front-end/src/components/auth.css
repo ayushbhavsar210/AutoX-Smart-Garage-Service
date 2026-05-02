@@ -394,22 +394,204 @@
 }
 
 /* Responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .auth-page {
+    padding: 20px 12px;
+    min-height: auto;
+  }
+
+  .auth-container {
+    max-width: 100%;
+  }
+
   .auth-card {
-    padding: 30px 20px;
+    padding: 24px 16px;
+    border-radius: 12px;
   }
 
   .auth-header h1 {
-    font-size: 26px;
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .auth-header p {
+    font-size: 13px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 14px 12px;
+    font-size: 16px;
   }
 
   .form-row {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .form-row-inline {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+  }
+
+  .submit-btn {
+    padding: 16px 16px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+
+  .social-btn {
+    padding: 14px 14px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  .forgot-link {
+    font-size: 13px;
+  }
+
+  .error-text {
+    font-size: 11px;
+  }
+
+  .demo-info {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+
+  .modal-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .forgot-password-modal {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+
+  .forgot-password-header h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 16px 8px;
+  }
+
+  .auth-card {
+    padding: 20px 14px;
+  }
+
+  .auth-header h1 {
+    font-size: 22px;
+  }
+
+  .form-group {
+    gap: 6px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .submit-btn {
+    padding: 16px 14px;
+    font-size: 14px;
+    min-height: 48px;
+    margin-top: 6px;
+  }
+
+  .password-input-wrapper input {
+    padding-right: 44px;
+  }
+
+  .password-toggle-btn {
+    padding: 4px 6px;
+    font-size: 14px;
+  }
+
+  .social-btn {
+    padding: 12px 12px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+
+  .social-btn span {
+    font-size: 16px;
+  }
+
+  .form-checkbox {
+    gap: 8px;
+  }
+
+  .form-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+
+  .form-checkbox label {
+    font-size: 12px;
+  }
+
+  .error-banner {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .success-banner {
+    font-size: 13px;
+    padding: 12px 14px;
+  }
+
+  .auth-footer {
+    font-size: 12px;
+    margin-top: 14px;
+  }
+
+  .divider {
+    margin: 18px 0;
+    font-size: 12px;
+  }
+
+  .forgot-password-modal {
+    padding: 24px 16px;
+  }
+
+  .forgot-form {
+    gap: 12px;
+  }
+
+  .forgot-submit-btn,
+  .cancel-btn {
+    padding: 14px 12px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .auth-card {
+    max-width: 420px;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 15px;
   }
 }
 /* Forgot Password Modal */
