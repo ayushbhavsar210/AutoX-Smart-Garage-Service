@@ -55,7 +55,7 @@ function ServicePayment() {
         order_id: orderData.order_id,
         handler: async (response) => {
           try {
-            const verifyResult = await postPaymentRequest('/verify-payment', {
+            await postPaymentRequest('/verify-payment', {
               service_name: serviceName.trim(),
               amount: Number(amount),
               razorpay_order_id: response.razorpay_order_id,

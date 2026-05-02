@@ -70,9 +70,9 @@ function CustomerDashboard() {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('details'); // 'details' or 'renew'
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedBooking] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [bookingModalType, setBookingModalType] = useState('reschedule'); // 'reschedule' or 'cancel'
+  const [bookingModalType] = useState('reschedule'); // 'reschedule' or 'cancel'
   const [showPayment, setShowPayment] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [activeBrowseService, setActiveBrowseService] = useState(null);

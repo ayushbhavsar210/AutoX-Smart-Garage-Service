@@ -1,11 +1,83 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 import { modificationsApi, vehiclesApi } from '../utils/apiService';
 import "./Mods.css";
 
+const featuredParts = [
+  {
+    name: "Body Kit",
+    price: "From Rs 22,000",
+    image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Aggressive exterior styling with premium finish.",
+  },
+  {
+    name: "Custom Paint",
+    price: "From Rs 16,000",
+    image: "https://images.unsplash.com/photo-1615906655593-ad0386982a0f?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Unique color themes with long-lasting protection.",
+  },
+  {
+    name: "Alloy Wheels",
+    price: "From Rs 18,000",
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Sporty look with better road grip.",
+  },
+  {
+    name: "LED Lights",
+    price: "From Rs 6,500",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Sharper visibility and premium styling.",
+  },
+  {
+    name: "Window Tinting",
+    price: "From Rs 5,500",
+    image: "https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Heat reduction and classy privacy finish.",
+  },
+  {
+    name: "Engine Tuning",
+    price: "From Rs 12,000",
+    image: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Optimized power delivery and smoother response.",
+  },
+  {
+    name: "Turbo Kit",
+    price: "From Rs 45,000",
+    image: "https://images.unsplash.com/photo-1517524206127-48bbd363f3d0?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Performance boost with professional installation.",
+  },
+  {
+    name: "Sound System",
+    price: "From Rs 15,000",
+    image: "https://images.unsplash.com/photo-1511391409281-0c3a19d1fa0d?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Immersive audio upgrade with crisp clarity.",
+  },
+  {
+    name: "Seat Covers",
+    price: "From Rs 4,500",
+    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=70",
+    blurb: "Comfort-first interior refresh.",
+  },
+];
+
+const budgets = [
+  { value: "<25000", label: "Below ₹25,000" },
+  { value: "25000-75000", label: "₹25,000 - ₹75,000" },
+  { value: "75000-150000", label: "₹75,000 - ₹1,50,000" },
+  { value: ">150000", label: "Above ₹1,50,000" },
+];
+
+const categoryPartMap = {
+  aesthetic: new Set(["Body Kit", "Custom Paint", "Alloy Wheels", "LED Lights", "Window Tinting", "Sunroof"]),
+  performance: new Set(["Engine Tuning", "Turbo Kit", "Exhaust System", "Air Intake", "Suspension"]),
+  audio: new Set(["Sound System", "Subwoofer", "Amplifier", "Android Head Unit"]),
+  safety: new Set(["Dash Cam", "Parking Sensors", "Reverse Camera", "Seat Covers", "Floor Mats"]),
+};
+
 function ModsQuote({ embedded = false }) {
+
   const navigate = useNavigate();
   const location = useLocation();
   const { addNotification } = useNotifications();
@@ -49,143 +121,6 @@ function ModsQuote({ embedded = false }) {
     return [];
   };
 
-  const featuredParts = [
-    {
-      name: "Body Kit",
-      price: "From Rs 22,000",
-      image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Aggressive exterior styling with premium finish.",
-    },
-    {
-      name: "Custom Paint",
-      price: "From Rs 16,000",
-      image: "https://images.unsplash.com/photo-1615906655593-ad0386982a0f?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Unique color themes with long-lasting protection.",
-    },
-    {
-      name: "Alloy Wheels",
-      price: "From Rs 18,000",
-      image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Sporty look with better road grip.",
-    },
-    {
-      name: "LED Lights",
-      price: "From Rs 6,500",
-      image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Sharper visibility and premium styling.",
-    },
-    {
-      name: "Window Tinting",
-      price: "From Rs 5,500",
-      image: "https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Heat reduction and classy privacy finish.",
-    },
-    {
-      name: "Engine Tuning",
-      price: "From Rs 12,000",
-      image: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Optimized power delivery and smoother response.",
-    },
-    {
-      name: "Turbo Kit",
-      price: "From Rs 48,000",
-      image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Performance boost for high-output driving.",
-    },
-    {
-      name: "Exhaust System",
-      price: "From Rs 14,000",
-      image: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Performance tone with airflow improvement.",
-    },
-    {
-      name: "Air Intake",
-      price: "From Rs 7,500",
-      image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Better breathing for improved acceleration.",
-    },
-    {
-      name: "Suspension",
-      price: "From Rs 19,000",
-      image: "https://images.unsplash.com/photo-1621252179027-94459d278660?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Balanced comfort and cornering control.",
-    },
-    {
-      name: "Sound System",
-      price: "From Rs 11,500",
-      image: "https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Rich cabin audio with crisp output.",
-    },
-    {
-      name: "Subwoofer",
-      price: "From Rs 8,000",
-      image: "https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Deep bass response for premium music feel.",
-    },
-    {
-      name: "Amplifier",
-      price: "From Rs 6,800",
-      image: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Clearer and louder audio without distortion.",
-    },
-    {
-      name: "Android Head Unit",
-      price: "From Rs 9,500",
-      image: "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Smart infotainment, maps, and connectivity.",
-    },
-    {
-      name: "Dash Cam",
-      price: "From Rs 4,800",
-      image: "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Reliable driving evidence and safer trips.",
-    },
-    {
-      name: "Parking Sensors",
-      price: "From Rs 4,000",
-      image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Safer reverse and tighter parking confidence.",
-    },
-    {
-      name: "Reverse Camera",
-      price: "From Rs 5,200",
-      image: "https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Wide-angle rear visibility for safe maneuvering.",
-    },
-    {
-      name: "Seat Covers",
-      price: "From Rs 3,900",
-      image: "https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Comfort upgrade with durable interior finish.",
-    },
-    {
-      name: "Floor Mats",
-      price: "From Rs 2,500",
-      image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Cabin protection with easy-clean premium mats.",
-    },
-    {
-      name: "Sunroof",
-      price: "From Rs 28,000",
-      image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=70",
-      blurb: "Upgrade cabin feel with open-sky comfort.",
-    },
-  ];
-
-  const budgets = [
-    { value: "<25000", label: "Below ₹25,000" },
-    { value: "25000-75000", label: "₹25,000 - ₹75,000" },
-    { value: "75000-150000", label: "₹75,000 - ₹1,50,000" },
-    { value: ">150000", label: "Above ₹1,50,000" },
-  ];
-
-  const categoryPartMap = {
-    aesthetic: new Set(["Body Kit", "Custom Paint", "Alloy Wheels", "LED Lights", "Window Tinting", "Sunroof"]),
-    performance: new Set(["Engine Tuning", "Turbo Kit", "Exhaust System", "Air Intake", "Suspension"]),
-    audio: new Set(["Sound System", "Subwoofer", "Amplifier", "Android Head Unit"]),
-    safety: new Set(["Dash Cam", "Parking Sensors", "Reverse Camera", "Seat Covers", "Floor Mats"]),
-  };
-
   const getCategoryKey = (value) => {
     const normalized = String(value || '').toLowerCase();
     if (normalized.includes('aesthetic')) return 'aesthetic';
@@ -196,9 +131,11 @@ function ModsQuote({ embedded = false }) {
   };
 
   const selectedCategoryKey = getCategoryKey(form.category);
-  const visibleParts = featuredParts.filter((part) => {
-    return selectedCategoryKey ? categoryPartMap[selectedCategoryKey]?.has(part.name) : true;
-  });
+  const visibleParts = useMemo(() => {
+    return featuredParts.filter((part) => {
+      return selectedCategoryKey ? categoryPartMap[selectedCategoryKey]?.has(part.name) : true;
+    });
+  }, [selectedCategoryKey]);
 
   useEffect(() => {
     setForm((prev) => ({
@@ -288,7 +225,7 @@ function ModsQuote({ embedded = false }) {
     };
   }, [user?.id, user?.userId, user?._id, user?.email, user?.name, user?.fullName, user?.phone, user?.mobile]);
 
-  const loadMyRequests = async () => {
+  const loadMyRequests = useCallback(async () => {
     setRequestsLoading(true);
     try {
       const response = await modificationsApi.listMine({
@@ -304,11 +241,11 @@ function ModsQuote({ embedded = false }) {
     } finally {
       setRequestsLoading(false);
     }
-  };
+  }, [user?.id, user?.userId, user?._id, user?.email, user?.name, user?.fullName, user?.phone, user?.mobile]);
 
   useEffect(() => {
     loadMyRequests();
-  }, [user?.id, user?.userId, user?._id, user?.email, user?.name, user?.fullName, user?.phone, user?.mobile]);
+  }, [loadMyRequests]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -366,7 +303,6 @@ function ModsQuote({ embedded = false }) {
         email: form.email,
         userId: user?.userId || user?.id || '',
         userObjectId: user?._id || '',
-        status: 'Quote Requested',
       });
 
       const created = response?.data || response || null;

@@ -10,7 +10,6 @@ function Home() {
   const [expandedService, setExpandedService] = useState(null);
   const [clickEffect, setClickEffect] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -283,9 +282,7 @@ function Home() {
               fetchPriority="high"
               decoding="async"
               className="hero-slider-image"
-              onLoad={() => setImageLoaded(true)}
               onError={() => {
-                setImageLoaded(false);
                 setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
               }}
             />
