@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable';
 import { vehiclesApi } from '../../utils/apiService';
 import './ManageVehicles.css';
@@ -23,7 +23,7 @@ function ManageVehicles() {
   const [showForm, setShowForm] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
 
-  const loadVehicles = async () => {
+  const loadVehicles = useCallback(async () => {
     try {
       const query = new URLSearchParams();
       if (searchVehicle) query.set('vehicleNumber', searchVehicle);
@@ -35,7 +35,28 @@ function ManageVehicles() {
       console.error('Unable to load vehicles:', error);
       setVehicles([]);
     }
-  };
+  }, [searchVehicle, filterCustomer]);
+
+  const handleEdit = useCallback((vehicle) => {
+    setFormData({
+      id: vehicle.id,
+      user_id: vehicle.user_id || '',
+      customer_name: vehicle.customer_name || '',
+      mobile: vehicle.mobile || '',
+      vehicle_number: vehicle.vehicle_number || '',
+      vehicle_company: vehicle.vehicle_company || '',
+      vehicle_model: vehicle.vehicle_model || '',
+      vehicle_type: vehicle.vehicle_type || 'Car',
+      added_by: vehicle.added_by || 'admin',
+    });
+    setShowForm(true);
+  }, []);
+
+  const handleDelete = useCallback(async (vehicleId) => {
+    if (!window.confirm('Delete this vehicle?')) return;
+    await vehiclesApi.deleteAdmin(vehicleId);
+    await loadVehicles();
+  }, [loadVehicles]);
 
   useEffect(() => {
     loadVehicles();
@@ -89,7 +110,7 @@ function ManageVehicles() {
         },
       },
     ],
-    []
+    [handleEdit, handleDelete]
   );
 
   const resetForm = () => {
@@ -124,26 +145,7 @@ function ManageVehicles() {
     await loadVehicles();
   };
 
-  const handleEdit = (vehicle) => {
-    setFormData({
-      id: vehicle.id,
-      user_id: vehicle.user_id || '',
-      customer_name: vehicle.customer_name || '',
-      mobile: vehicle.mobile || '',
-      vehicle_number: vehicle.vehicle_number || '',
-      vehicle_company: vehicle.vehicle_company || '',
-      vehicle_model: vehicle.vehicle_model || '',
-      vehicle_type: vehicle.vehicle_type || 'Car',
-      added_by: vehicle.added_by || 'admin',
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (vehicleId) => {
-    if (!window.confirm('Delete this vehicle?')) return;
-    await vehiclesApi.deleteAdmin(vehicleId);
-    await loadVehicles();
-  };
+  
 
   return (
     <div className="admin-page vehicles-page">

@@ -1,5 +1,4 @@
-import axios from "axios";
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import './BookingWizard.css';
 import { useBookings } from '../context';
 import { useAuth } from '../context/AuthContext';
@@ -59,7 +58,7 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
 
   const [errors, setErrors] = useState({});
 
-  const loadSavedVehicles = async () => {
+  const loadSavedVehicles = useCallback(async () => {
     try {
       const response = await vehiclesApi.listMine({
         userId: user?.userId || user?.id || '',
@@ -73,17 +72,17 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
     } catch (_error) {
       setSavedVehicles([]);
     }
-  };
+  }, [user?.userId, user?.id, user?._id, user?.email, user?.name, user?.fullName, user?.phone]);
 
   React.useEffect(() => {
     loadSavedVehicles();
-  }, [user?.id, user?.userId, user?._id]);
+  }, [loadSavedVehicles]);
 
   React.useEffect(() => {
     if (currentStep === 2) {
       loadSavedVehicles();
     }
-  }, [currentStep]);
+  }, [currentStep, loadSavedVehicles]);
 
   const steps = [
     { number: 1, title: 'Select Service', icon: '🔧' },
@@ -441,7 +440,7 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
         },
         handler: async (response) => {
           try {
-            const verifyResult = await postPaymentRequest('/verify-payment', {
+            await postPaymentRequest('/verify-payment', {
               service_name: bookingData.serviceName,
               email: user?.email || undefined,
               amount,

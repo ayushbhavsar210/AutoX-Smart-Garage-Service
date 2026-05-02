@@ -395,7 +395,7 @@ function CustomerBillingHistory() {
     });
 
     return stats;
-  }, [normalizedBillings]);
+  }, [normalizedBillings, userBillings.length]);
 
   const latestSuccessfulPayment = useMemo(() => {
     const successfulRecords = normalizedBillings.filter(

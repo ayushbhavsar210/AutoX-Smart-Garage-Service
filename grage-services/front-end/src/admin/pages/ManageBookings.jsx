@@ -14,7 +14,7 @@ function ManageBookings() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusPayload, setStatusPayload] = useState({ status: 'pending', mechanicId: '' });
 
-  const loadBookings = async () => {
+  const loadBookings = React.useCallback(async () => {
     try {
       const query = new URLSearchParams();
       if (searchVehicle) query.set('vehicleNumber', searchVehicle);
@@ -28,9 +28,9 @@ function ManageBookings() {
       console.error('Unable to load bookings', error);
       setBookings([]);
     }
-  };
+  }, [searchVehicle, searchCustomer, statusFilter]);
 
-  const loadMechanics = async () => {
+  const loadMechanics = React.useCallback(async () => {
     try {
       const response = await mechanicsApi.list();
       const data = Array.isArray(response?.data) ? response.data : [];
@@ -38,13 +38,12 @@ function ManageBookings() {
     } catch (_error) {
       setMechanics([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadBookings();
     loadMechanics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadBookings, loadMechanics]);
 
   const normalizedBookings = useMemo(() => {
     return bookings.map((booking) => ({
@@ -76,11 +75,11 @@ function ManageBookings() {
     });
   }, [normalizedBookings, searchVehicle, searchCustomer, statusFilter]);
 
-  const handleDelete = async (bookingId) => {
+  const handleDelete = React.useCallback(async (bookingId) => {
     if (!window.confirm('Delete this booking?')) return;
     await bookingApi.delete(bookingId);
     await loadBookings();
-  };
+  }, [loadBookings]);
 
   const openStatusModal = (booking) => {
     setSelectedBooking(booking);
@@ -142,7 +141,7 @@ function ManageBookings() {
         },
       },
     ],
-    [mechanics]
+    [handleDelete]
   );
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable.jsx';
 import { assignmentsApi, bookingApi, mechanicsApi, servicesApi } from '../../utils/apiService';
 
@@ -97,27 +97,27 @@ function ManageAssignments() {
     loadDropdowns();
   }, []);
 
-  const normalizeStatusKey = (value) => {
+  const normalizeStatusKey = useCallback((value) => {
     const raw = String(value || '').trim().toLowerCase();
     if (['pending', 'assigned', 'open', 'scheduled'].includes(raw)) return 'assigned';
     if (['in progress', 'in-progress', 'in_progress'].includes(raw)) return 'in-progress';
     if (['completed', 'complete', 'done'].includes(raw)) return 'completed';
     return raw || 'assigned';
-  };
+  }, []);
 
-  const prettyStatus = (value) => {
+  const prettyStatus = useCallback((value) => {
     const status = normalizeStatusKey(value);
     if (status === 'assigned') return 'Assigned';
     if (status === 'in-progress') return 'In Progress';
     if (status === 'completed') return 'Completed';
     return String(value || 'Assigned');
-  };
+  }, [normalizeStatusKey]);
 
   const normalizedAssignments = useMemo(() => assignments.map((assignment) => ({
     ...assignment,
     statusKey: normalizeStatusKey(assignment.statusKey || assignment.status),
     status: prettyStatus(assignment.statusKey || assignment.status),
-  })), [assignments]);
+  })), [assignments, prettyStatus, normalizeStatusKey]);
 
   const filteredAssignments = useMemo(() => {
     return normalizedAssignments.filter((assignment) => {
@@ -129,7 +129,7 @@ function ManageAssignments() {
 
       return matchesStatus && matchesMechanic && matchesSearch;
     });
-  }, [normalizedAssignments, filterStatus, filterMechanic, searchTerm]);
+  }, [normalizedAssignments, filterStatus, filterMechanic, searchTerm, normalizeStatusKey]);
 
   const statusTabs = useMemo(() => {
     const priority = ['assigned', 'in-progress', 'completed'];
@@ -137,7 +137,7 @@ function ManageAssignments() {
     const ordered = [...priority.filter((item) => dynamicStatuses.includes(item)), ...dynamicStatuses.filter((item) => !priority.includes(item))];
 
     return ['All', ...ordered.map((status) => prettyStatus(status))];
-  }, [normalizedAssignments]);
+  }, [normalizedAssignments, prettyStatus]);
 
   const assignmentColumns = useMemo(() => [
     { accessorKey: 'id', header: 'ID' },

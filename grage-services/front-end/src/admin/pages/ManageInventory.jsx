@@ -132,7 +132,7 @@ function ManageInventory() {
     setActiveView('addPart');
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm('Are you sure you want to delete this part?')) return;
     try {
       await inventoryApi.delete(id);
@@ -140,7 +140,7 @@ function ManageInventory() {
     } catch (err) {
       console.error('Error deleting part:', err);
     }
-  };
+  }, [loadInventory]);
 
   const handleStockUpdate = async (id) => {
     const qty = Number(stockUpdateQty);
@@ -207,7 +207,7 @@ function ManageInventory() {
         <button className="inv-btn delete" onClick={() => handleDelete(row.original.id)} title="Delete">🗑️</button>
       </div>
     )},
-  ], [inventory]);
+  ], [handleDelete]);
 
   const historyColumns = useMemo(() => [
     { accessorKey: 'id', header: '#' },

@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable.jsx';
 import { modificationsApi, mechanicsApi } from '../../utils/apiService';
 
 function ManageModifications() {
   const [modifications, setModifications] = useState([]);
 
-  const loadModifications = async () => {
+  const loadModifications = useCallback(async () => {
     try {
       const res = await modificationsApi.list();
       const raw = res?.data || res || [];
@@ -31,9 +31,9 @@ function ManageModifications() {
     } catch (err) {
       console.error('Error loading modifications:', err);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadModifications(); }, []);
+  useEffect(() => { loadModifications(); }, [loadModifications]);
 
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,7 +50,7 @@ function ManageModifications() {
     assignedTo: ''
   });
 
-  const handleSendQuote = async (rowData) => {
+  const handleSendQuote = useCallback(async (rowData) => {
     const exactPrice = window.prompt(`Exact price enter karo for ${rowData.vehicle}:`, String(rowData.estimatedCost || ''));
     if (!exactPrice) return;
     const normalizedPrice = Number(String(exactPrice).replace(/[^0-9.]/g, ''));
@@ -76,9 +76,9 @@ function ManageModifications() {
       console.error('Error sending quote:', err);
       alert('Quote update failed');
     }
-  };
+  }, [loadModifications]);
 
-  const handleStatusUpdate = async (rowData) => {
+  const handleStatusUpdate = useCallback(async (rowData) => {
     const nextStatus = window.prompt('Status update karo: Quoted / Confirmed / Pickup Scheduled / In Progress / Completed / Rejected', rowData.status || 'In Progress');
     if (!nextStatus) return;
 
@@ -92,7 +92,7 @@ function ManageModifications() {
       console.error('Error updating status:', err);
       alert('Status update failed');
     }
-  };
+  }, [loadModifications]);
 
   const modificationColumns = useMemo(() => [
     { accessorKey: 'id', header: 'ID' },
@@ -124,7 +124,7 @@ function ManageModifications() {
         );
       }
     },
-  ], []);
+  ], [handleSendQuote, handleStatusUpdate]);
 
   const modificationTypes = [
     'Performance Tuning',

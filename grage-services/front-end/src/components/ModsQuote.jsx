@@ -152,7 +152,7 @@ function ModsQuote({ embedded = false }) {
       ...prev,
       mods: prev.mods.filter((mod) => visiblePartNames.has(mod)),
     }));
-  }, [selectedCategoryKey]);
+  }, [visibleParts]);
 
   useEffect(() => {
     let active = true;

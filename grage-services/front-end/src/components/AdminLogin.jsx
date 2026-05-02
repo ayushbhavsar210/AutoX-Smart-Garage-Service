@@ -26,9 +26,7 @@ function AdminLogin() {
 
   // Detect login type based on input format
   // Only email login allowed
-  const detectLoginType = (identifier) => {
-    return 'customer'; // Email format only
-  };
+
 
   const resolveCustomerEmail = async (identifier) => {
     const raw = String(identifier || '').trim();

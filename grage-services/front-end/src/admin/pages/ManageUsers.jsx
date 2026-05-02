@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable.jsx';
 import { usersApi } from '../../utils/apiService';
 
@@ -15,7 +15,7 @@ function ManageUsers() {
     password: '',
   });
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const res = await usersApi.list();
       const raw = res?.data || res || [];
@@ -37,9 +37,9 @@ function ManageUsers() {
       console.error('Error loading users:', err);
       setUsers([]);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const resetForm = () => {
     setFormData({
@@ -100,7 +100,7 @@ function ManageUsers() {
     setShowForm(true);
   };
 
-  const handleDelete = async (userId) => {
+  const handleDelete = useCallback(async (userId) => {
     if (!window.confirm('Delete this user?')) return;
 
     try {
@@ -110,7 +110,7 @@ function ManageUsers() {
     } catch (error) {
       alert(error?.message || 'Unable to delete user.');
     }
-  };
+  }, [loadUsers]);
 
   const userColumns = useMemo(() => [
     { accessorKey: 'id', header: 'ID', size: 100 },
@@ -151,7 +151,7 @@ function ManageUsers() {
         );
       },
     },
-  ], []);
+  ], [handleDelete]);
 
   const closeProfile = () => setSelectedUser(null);
 

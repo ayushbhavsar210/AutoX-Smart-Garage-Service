@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable.jsx';
 import { getAuthToken } from '../../utils/apiClient';
 
@@ -30,7 +30,7 @@ function ManageRepairs() {
   const [totalPages, setTotalPages] = useState(1);
   const [counts, setCounts] = useState({ total: 0, success: 0, failed: 0, pending: 0 });
 
-  const loadPayments = async (pageOverride = page) => {
+  const loadPayments = useCallback(async (pageOverride = page) => {
     try {
       setLoading(true);
       setError('');
@@ -111,16 +111,16 @@ function ManageRepairs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, searchTerm, page]);
 
   useEffect(() => {
     setPage(1);
     loadPayments(1);
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, loadPayments]);
 
   useEffect(() => {
     loadPayments(page);
-  }, [page]);
+  }, [page, loadPayments]);
 
   const filteredPayments = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
