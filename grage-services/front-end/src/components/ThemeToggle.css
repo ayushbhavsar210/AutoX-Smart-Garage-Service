@@ -1,0 +1,157 @@
+/* Theme Toggle Button Styles */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+[data-theme="dark"] .theme-toggle:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+}
+
+/* Icon */
+.theme-icon {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: icon-rotate 0.3s ease-out;
+}
+
+/* Label */
+.theme-label {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .theme-toggle {
+    padding: 6px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .theme-icon {
+    font-size: 14px;
+  }
+
+  .theme-label {
+    display: none;
+  }
+}
+
+/* Animation for icon rotation */
+@keyframes icon-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+/* Smooth Icon Transition */
+.theme-icon {
+  animation: icon-rotate 0.4s ease-out;
+}
+
+/* Alternative: Toggle Switch Style */
+.theme-toggle.switch-style {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+  padding: 10px 16px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle.switch-style .theme-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Accessible Focus States */
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Light Mode - Specific Styling */
+[data-theme="light"] .theme-toggle {
+  background-color: #F3F4F6;
+  color: #1F2937;
+  border-color: #E5E7EB;
+}
+
+[data-theme="light"] .theme-toggle:hover {
+  background-color: #E5E7EB;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Mode - Specific Styling */
+[data-theme="dark"] .theme-toggle {
+  background-color: #2D3748;
+  color: #F9FAFB;
+  border-color: #4B5563;
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background-color: #374151;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Keyboard Navigation */
+.theme-toggle:focus-within {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .theme-toggle:focus-within {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1), 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Tooltip for Theme Toggle */
+.theme-toggle[title] {
+  position: relative;
+}
+
+/* Disable animation on reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-icon {
+    animation: none;
+    transition: none;
+  }
+}

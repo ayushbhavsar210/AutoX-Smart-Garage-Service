@@ -1,0 +1,53 @@
+.bookings-admin-page {
+  color: #1f2937;
+}
+
+.booking-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.8fr auto;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7f1d1d;
+  text-transform: uppercase;
+}
+
+.filter-group input,
+.filter-group select {
+  height: 38px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+.booking-filters .btn-secondary {
+  align-self: end;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 14px;
+}
+
+@media (max-width: 1024px) {
+  .booking-filters {
+    grid-template-columns: 1fr;
+  }
+}

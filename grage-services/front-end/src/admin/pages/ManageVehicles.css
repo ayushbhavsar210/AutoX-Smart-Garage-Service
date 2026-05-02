@@ -1,0 +1,163 @@
+.vehicles-page {
+  color: #1f2937;
+}
+
+.vehicle-filters {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7f1d1d;
+  text-transform: uppercase;
+}
+
+.filter-group input,
+.filter-group select,
+.vehicle-form input,
+.vehicle-form select {
+  height: 38px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+.vehicle-filters .btn-secondary {
+  align-self: end;
+  height: 38px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 14px;
+}
+
+.vehicle-actions-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.vehicle-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 8px 10px;
+}
+
+.vehicle-ref {
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 6px 10px;
+}
+
+.btn-view {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+.btn-edit {
+  background: #fca5a5;
+  color: #7f1d1d;
+}
+
+.btn-delete {
+  background: #dc2626;
+  color: #fff;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  width: min(860px, 92vw);
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .vehicle-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .vehicle-action-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

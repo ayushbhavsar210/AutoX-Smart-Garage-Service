@@ -1,0 +1,238 @@
+.reports-container {
+  padding: 28px;
+  background:
+    radial-gradient(1200px 220px at -20% -20%, rgba(239, 68, 68, 0.1), transparent 55%),
+    linear-gradient(135deg, #fff7ed 0%, #ffffff 40%, #f8fafc 100%);
+  border-radius: 14px;
+  border: 1px solid #fed7aa;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+}
+
+.reports-header {
+  margin-bottom: 20px;
+}
+
+.reports-header h1 {
+  margin: 0 0 6px;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.reports-header p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.reports-toolbar {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.reports-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  font-size: 12px;
+  color: #374151;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.field-group input,
+.field-group select {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.field-group select {
+  padding-right: 36px;
+}
+
+.report-date-input {
+  min-width: 150px;
+  font-weight: 600;
+}
+
+.report-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+.reports-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.apply-filter-btn {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+  min-height: 40px;
+  padding-inline: 16px;
+  font-weight: 700;
+}
+
+.download-pdf-btn {
+  min-height: 40px;
+  padding-inline: 16px;
+  font-weight: 700;
+}
+
+.apply-filter-btn:hover,
+.download-pdf-btn:hover {
+  transform: translateY(-1px);
+}
+
+.reports-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-pill {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary-pill span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.summary-pill strong {
+  font-size: 16px;
+  color: #111827;
+}
+
+.reports-grid-wrapper {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  overflow: auto;
+}
+
+.report-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 8px 4px;
+}
+
+.report-title-row h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.report-title-row p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.reports-error {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 16px;
+  }
+
+  .reports-header h1 {
+    font-size: 26px;
+  }
+
+  .reports-header p {
+    font-size: 14px;
+  }
+
+  .reports-filter-grid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+
+  .reports-summary-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .report-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .reports-header h1 {
+    font-size: 22px;
+  }
+
+  .reports-header p {
+    font-size: 13px;
+  }
+
+  .reports-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
