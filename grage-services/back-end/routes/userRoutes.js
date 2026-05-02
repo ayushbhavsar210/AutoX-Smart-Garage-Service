@@ -25,6 +25,8 @@ const adminMiddleware = require('../middleware/adminMiddleware');
  *         description: List of users
  */
 router.get('/users', authMiddleware, adminMiddleware, userController.getUsers);
+// API alias for clients expecting '/api/users'
+router.get('/api/users', authMiddleware, adminMiddleware, userController.getUsers);
 
 /**
  * @swagger
@@ -46,6 +48,8 @@ router.get('/users', authMiddleware, adminMiddleware, userController.getUsers);
  *         description: User not found
  */
 router.get('/users/:id', authMiddleware, adminMiddleware, userController.getUserById);
+// API alias
+router.get('/api/users/:id', authMiddleware, adminMiddleware, userController.getUserById);
 
 /**
  * @swagger
@@ -71,6 +75,17 @@ router.get('/users/:id', authMiddleware, adminMiddleware, userController.getUser
  */
 router.post(
   '/users',
+  authMiddleware,
+  adminMiddleware,
+  body('name')
+    .notEmpty().withMessage('Name is required')
+    .isLength({ min: 3 }).withMessage('Name must be at least 3 characters'),
+  validate,
+  userController.createUser
+);
+// API alias
+router.post(
+  '/api/users',
   authMiddleware,
   adminMiddleware,
   body('name')
@@ -116,6 +131,17 @@ router.put(
   validate,
   userController.updateUser
 );
+// API alias
+router.put(
+  '/api/users/:id',
+  authMiddleware,
+  adminMiddleware,
+  body('name')
+    .notEmpty().withMessage('Name is required')
+    .isLength({ min: 3 }).withMessage('Name must be at least 3 characters'),
+  validate,
+  userController.updateUser
+);
 
 /**
  * @swagger
@@ -134,6 +160,8 @@ router.put(
  *         description: User deleted
  */
 router.delete('/users/:id', authMiddleware, adminMiddleware, userController.deleteUser);
+// API alias
+router.delete('/api/users/:id', authMiddleware, adminMiddleware, userController.deleteUser);
 
 /**
  * @swagger
