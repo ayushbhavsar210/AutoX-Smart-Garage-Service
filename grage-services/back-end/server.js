@@ -39,6 +39,7 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:3002',
   'http://localhost:5000',
+  'https://auto-x-smart-garage-service-wx82.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
