@@ -53,35 +53,53 @@ const postJson = async (url, payload) => {
   }
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isNetworkFailure = (error) => {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('load failed') ||
+    message.includes('connection refused') ||
+    message.includes('network request failed')
+  );
+};
+
 export const postPaymentRequest = async (path, payload) => {
   const urls = buildCandidateUrls(path);
   let lastNetworkError = null;
 
   for (const url of urls) {
-    const { response, error } = await postJson(url, payload);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const { response, error } = await postJson(url, payload);
 
-    if (!response) {
-      // Retry with fallback URL only when request could not be sent/reached.
-      lastNetworkError = error;
-      continue;
+      if (!response) {
+        lastNetworkError = error;
+        if (attempt < 2 && isNetworkFailure(error)) {
+          await sleep(300 * (attempt + 1));
+          continue;
+        }
+        break;
+      }
+
+      const result = await parseJsonSafely(response);
+      if (!response.ok || !result?.success) {
+        const message = result?.message || `Request failed with status ${response.status}`;
+        const requestError = new Error(message);
+        requestError.status = response.status;
+        throw requestError;
+      }
+
+      return result;
     }
-
-    const result = await parseJsonSafely(response);
-    if (!response.ok || !result?.success) {
-      const message = result?.message || `Request failed with status ${response.status}`;
-      const error = new Error(message);
-      error.status = response.status;
-      throw error;
-    }
-
-    return result;
   }
 
   if (!lastNetworkError) {
     throw new Error('Unable to connect to payment server');
   }
 
-  if (String(lastNetworkError.message || '').toLowerCase().includes('failed to fetch')) {
+  if (isNetworkFailure(lastNetworkError)) {
     throw new Error('Unable to connect to payment server. Please check the backend deployment and API base URL.');
   }
 
