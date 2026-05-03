@@ -37,24 +37,32 @@ const parseJsonSafely = async (response) => {
   };
 };
 
-export const postPaymentRequest = async (path, payload) => {
-  const urls = buildCandidateUrls(path);
-  let lastNetworkError = null;
-
-  for (const url of urls) {
+const postJson = async (url, payload) => {
+  try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload || {}),
-    }).catch((error) => {
-      // Retry with fallback URL only when request could not be sent/reached.
-      lastNetworkError = error;
-      return null;
     });
 
+    return { response, error: null };
+  } catch (error) {
+    return { response: null, error };
+  }
+};
+
+export const postPaymentRequest = async (path, payload) => {
+  const urls = buildCandidateUrls(path);
+  let lastNetworkError = null;
+
+  for (const url of urls) {
+    const { response, error } = await postJson(url, payload);
+
     if (!response) {
+      // Retry with fallback URL only when request could not be sent/reached.
+      lastNetworkError = error;
       continue;
     }
 
