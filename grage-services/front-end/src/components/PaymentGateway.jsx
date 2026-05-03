@@ -9,7 +9,7 @@ const toPaymentErrorMessage = (error) => {
   if (!raw) return 'Unable to start payment';
 
   if (raw.toLowerCase().includes('failed to fetch')) {
-    return 'Unable to connect to payment server. Please ensure backend is running at http://localhost:5000.';
+    return 'Unable to connect to payment server. Please check the backend deployment and API base URL.';
   }
 
   return raw;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { apiPost } from '../utils/apiClient';
 import './ResetPassword.css';
 
 function ResetPassword() {
@@ -79,31 +80,19 @@ function ResetPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch('/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          email,
-          newPassword,
-          confirmPassword,
-        }),
-      });
+      const payload = { token, email, newPassword, confirmPassword };
+      const data = await apiPost('/auth/reset-password', payload, { auth: false });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (data?.success) {
         setSuccess(true);
         setTimeout(() => {
           navigate('/login');
         }, 3000);
       } else {
-        setError(data.message || 'Failed to reset password. Please try again.');
+        setError((data && data.message) || 'Failed to reset password. Please try again.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again later.');
+      setError(err?.message || 'An error occurred. Please try again later.');
       console.error('Error:', err);
     } finally {
       setLoading(false);

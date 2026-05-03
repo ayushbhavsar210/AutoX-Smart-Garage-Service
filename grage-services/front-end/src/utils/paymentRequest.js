@@ -1,8 +1,10 @@
+import { API_BASE_URL } from './apiClient';
+
 const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/$/, '');
 
 const buildCandidateUrls = (path) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const envBase = normalizeBaseUrl(process.env.REACT_APP_API_BASE_URL);
+  const envBase = normalizeBaseUrl(API_BASE_URL);
 
   const candidates = [];
 
@@ -13,7 +15,7 @@ const buildCandidateUrls = (path) => {
   // CRA dev proxy fallback (relative path)
   candidates.push(normalizedPath);
 
-  // Explicit local backend fallback
+  // Explicit local backend fallback for local development.
   candidates.push(`http://localhost:5000${normalizedPath}`);
 
   return Array.from(new Set(candidates));
@@ -65,7 +67,7 @@ export const postPaymentRequest = async (path, payload) => {
   }
 
   if (String(lastError.message || '').toLowerCase().includes('failed to fetch')) {
-    throw new Error('Unable to connect to payment server. Please ensure backend is running on port 5000.');
+    throw new Error('Unable to connect to payment server. Please check the backend deployment and API base URL.');
   }
 
   throw lastError;

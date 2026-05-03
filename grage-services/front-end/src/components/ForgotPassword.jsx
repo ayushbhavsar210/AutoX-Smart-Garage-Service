@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './ForgotPassword.css';
+import { apiPost } from '../utils/apiClient';
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -15,24 +16,16 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch('/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email.trim() }),
-      });
+      const data = await apiPost('/auth/forgot-password', { email: email.trim() }, { auth: false });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (data?.success) {
         setSubmitted(true);
         setEmail('');
       } else {
-        setError(data.message || 'Failed to send reset link. Please try again.');
+        setError((data && data.message) || 'Failed to send reset link. Please try again.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again later.');
+      setError(err?.message || 'An error occurred. Please try again later.');
       console.error('Error:', err);
     } finally {
       setLoading(false);

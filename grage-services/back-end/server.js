@@ -86,6 +86,8 @@ app.get('/customer/invoices', authMiddleware, (req, res, next) => {
 });
 
 // Swagger Setup
+const publicBackendUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL || 'http://localhost:5000';
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -97,7 +99,7 @@ const options = {
     
     servers: [
       {
-        url: "http://localhost:5000"
+        url: publicBackendUrl
       }
     ],
     components: {
@@ -139,7 +141,7 @@ const startServer = async () => {
     }
 
     app.listen(port, () => {
-      console.log(`Server running at http://localhost:${port}`);
+      console.log(`Server running on port ${port}`);
     });
   } catch (error) {
     console.error('Database connection failed.');

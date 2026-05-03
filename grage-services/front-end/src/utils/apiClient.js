@@ -1,4 +1,10 @@
-const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+const LOCAL_API_BASE_URL = 'http://localhost:5000';
+const PRODUCTION_API_BASE_URL = 'https://autox-smart-garage-service.onrender.com';
+
+export const API_BASE_URL = (
+  process.env.REACT_APP_API_BASE_URL ||
+  (process.env.NODE_ENV === 'production' ? PRODUCTION_API_BASE_URL : LOCAL_API_BASE_URL)
+).replace(/\/$/, '');
 
 export const AUTH_TOKEN_STORAGE_KEY = 'authToken';
 export const REFRESH_TOKEN_STORAGE_KEY = 'refreshToken';

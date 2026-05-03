@@ -1,8 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import CommonTable from '../../components/CommonTable.jsx';
-import { getAuthToken } from '../../utils/apiClient';
-
-const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000').replace(/\/$/, '');
+import { API_BASE_URL, getAuthToken } from '../../utils/apiClient';
 
 const toDisplayStatus = (status) => {
   const raw = String(status || '').toLowerCase();
