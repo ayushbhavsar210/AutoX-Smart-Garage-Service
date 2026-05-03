@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import './BookingWizard.css';
-import { useBookings } from '../context';
 import { useAuth } from '../context/AuthContext';
-import { servicesApi, vehiclesApi } from '../utils/apiService';
+import { bookingApi, servicesApi, vehiclesApi } from '../utils/apiService';
 import { postPaymentRequest } from '../utils/paymentRequest';
 
 const loadRazorpayScript = () =>
@@ -22,7 +21,6 @@ const loadRazorpayScript = () =>
 const MERCHANT_NAME = 'AutoX Garage';
 
 const BookingWizard = ({ preselectedServiceId = null }) => {
-  const { createBooking } = useBookings();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -362,49 +360,6 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
       setCurrentStep(1);
     };
 
-    const submitBooking = async (paymentDetails) => {
-      const selectedStartSlot = bookingData.preferredSlot?.split(' - ')[0] || '09:00 AM';
-      const [timePart, period] = selectedStartSlot.split(' ');
-      let [hours, minutes] = timePart.split(':').map(Number);
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
-
-      const slotDate = bookingData.bookingDate ? new Date(bookingData.bookingDate) : new Date();
-      slotDate.setHours(hours, Number(minutes || 0), 0, 0);
-      const scheduledAt = slotDate.toISOString();
-
-      const result = await createBooking({
-        userId: user?.userId || user?.id,
-        serviceId: bookingData.serviceId,
-        serviceName: bookingData.serviceName,
-        customerName: user?.name || user?.fullName || user?.email || 'Customer',
-        email: user?.email || '',
-        phone: user?.phone || '',
-        date: bookingData.bookingDate,
-        timeSlot: bookingData.preferredSlot,
-        scheduledAt,
-        notes: bookingData.specialInstructions,
-        amount: bookingData.servicePrice,
-        paymentMethod: 'Razorpay',
-        paymentStatus: 'completed',
-        paymentDate: new Date().toISOString(),
-        transactionId: paymentDetails?.razorpay_payment_id || '',
-        razorpayOrderId: paymentDetails?.razorpay_order_id || '',
-        razorpayPaymentId: paymentDetails?.razorpay_payment_id || '',
-        razorpaySignature: paymentDetails?.razorpay_signature || '',
-        vehicleNumber: bookingData.vehicleNumber,
-        vehicleCompany: bookingData.vehicleBrand,
-        vehicleModel: bookingData.vehicleModel,
-        vehicleType: bookingData.vehicleType,
-      });
-
-      if (!result.success) {
-        throw new Error(result.error || 'Booking failed after successful payment');
-      }
-
-      return result.data?.id || 'N/A';
-    };
-
     try {
       setIsProcessing(true);
 
@@ -416,6 +371,42 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error('Unable to load Razorpay checkout script');
+      }
+
+      const selectedStartSlot = bookingData.preferredSlot?.split(' - ')[0] || '09:00 AM';
+      const [timePart, period] = selectedStartSlot.split(' ');
+      let [hours, minutes] = timePart.split(':').map(Number);
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+
+      const slotDate = bookingData.bookingDate ? new Date(bookingData.bookingDate) : new Date();
+      slotDate.setHours(hours, Number(minutes || 0), 0, 0);
+      const scheduledAt = slotDate.toISOString();
+
+      const pendingBookingResult = await bookingApi.createPublic({
+        userId: user?.userId || user?.id || null,
+        userObjectId: user?._id || '',
+        serviceId: bookingData.serviceId,
+        serviceName: bookingData.serviceName,
+        customerName: user?.name || user?.fullName || user?.email || 'Customer',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        vehicleNumber: bookingData.vehicleNumber,
+        vehicleCompany: bookingData.vehicleBrand,
+        vehicleModel: bookingData.vehicleModel,
+        vehicleType: bookingData.vehicleType,
+        date: bookingData.bookingDate,
+        timeSlot: bookingData.preferredSlot,
+        scheduledAt,
+        notes: bookingData.specialInstructions,
+        amount,
+        paymentMethod: 'Razorpay',
+        paymentStatus: 'pending',
+      }, { auth: false });
+
+      const pendingBookingId = pendingBookingResult?.data?.id || pendingBookingResult?.data?._id;
+      if (!pendingBookingId) {
+        throw new Error('Unable to create booking before payment');
       }
 
       const createPaymentResult = await postPaymentRequest('/create-payment', {
@@ -444,13 +435,13 @@ const BookingWizard = ({ preselectedServiceId = null }) => {
               service_name: bookingData.serviceName,
               email: user?.email || undefined,
               amount,
+              booking_id: pendingBookingId,
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
 
-            const bookingId = await submitBooking(response);
-            alert(`Payment successful and booking confirmed! Booking ID: ${bookingId}`);
+            alert(`Payment successful and booking confirmed! Booking ID: ${pendingBookingId}`);
             resetWizard();
           } catch (verificationError) {
             alert(verificationError.message || 'Payment verification failed');
