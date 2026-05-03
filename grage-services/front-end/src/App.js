@@ -80,7 +80,7 @@ function AnimatedRoutes() {
       const timeout = setTimeout(() => {
         setDisplayLocation(location);
         setTransitionStage('fadeIn');
-      }, 350);
+      }, 250);
       return () => clearTimeout(timeout);
     }
   }, [transitionStage, location]);
