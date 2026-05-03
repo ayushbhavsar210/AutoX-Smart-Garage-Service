@@ -36,39 +36,42 @@ const parseJsonSafely = async (response) => {
 
 export const postPaymentRequest = async (path, payload) => {
   const urls = buildCandidateUrls(path);
-  let lastError = null;
+  let lastNetworkError = null;
 
   for (const url of urls) {
+    let response;
     try {
-      const response = await fetch(url, {
+      response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload || {}),
       });
-
-      const result = await parseJsonSafely(response);
-      if (!response.ok || !result?.success) {
-        const message = result?.message || `Request failed with status ${response.status}`;
-        const error = new Error(message);
-        error.status = response.status;
-        throw error;
-      }
-
-      return result;
     } catch (error) {
-      lastError = error;
+      // Retry with fallback URL only when request could not be sent/reached.
+      lastNetworkError = error;
+      continue;
     }
+
+    const result = await parseJsonSafely(response);
+    if (!response.ok || !result?.success) {
+      const message = result?.message || `Request failed with status ${response.status}`;
+      const error = new Error(message);
+      error.status = response.status;
+      throw error;
+    }
+
+    return result;
   }
 
-  if (!lastError) {
+  if (!lastNetworkError) {
     throw new Error('Unable to connect to payment server');
   }
 
-  if (String(lastError.message || '').toLowerCase().includes('failed to fetch')) {
+  if (String(lastNetworkError.message || '').toLowerCase().includes('failed to fetch')) {
     throw new Error('Unable to connect to payment server. Please check the backend deployment and API base URL.');
   }
 
-  throw lastError;
+  throw lastNetworkError;
 };
