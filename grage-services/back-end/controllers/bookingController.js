@@ -349,6 +349,7 @@ const createBooking = async (req, res, next) => {
       vehicleModel,
       vehicleType,
       status: 'scheduled',
+      bookingStatus: 'scheduled',
       createdAt: new Date().toISOString()
     };
 
@@ -460,6 +461,7 @@ const createBookingPublic = async (req, res, next) => {
       razorpayPaymentId: razorpayPaymentId || '',
       razorpaySignature: razorpaySignature || '',
       status: resolvedPaymentStatus === 'completed' || resolvedPaymentStatus === 'paid' ? 'scheduled' : 'pending',
+      bookingStatus: resolvedPaymentStatus === 'completed' || resolvedPaymentStatus === 'paid' ? 'scheduled' : 'pending',
       createdAt: new Date().toISOString()
     };
 

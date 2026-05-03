@@ -311,6 +311,7 @@ const verifyPayment = async (req, res, next) => {
             invoiceNumber: generatedInvoiceNumber,
             paymentMethod: 'Razorpay',
             status: 'confirmed',
+            bookingStatus: 'confirmed',
             updatedAt: new Date().toISOString(),
           },
         }
