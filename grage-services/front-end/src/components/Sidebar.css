@@ -16,6 +16,10 @@
   overflow-x: hidden;
 }
 
+.app {
+  padding-left: 260px;
+}
+
 .sidebar.scrolled {
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
 }
@@ -242,7 +246,7 @@
 
 /* Adjust main content for sidebar */
 body {
-  margin-left: 260px;
+  margin: 0;
 }
 
 /* Scrollbar styling */
@@ -263,10 +267,10 @@ body {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive - Mobile */
-@media (max-width: 768px) {
-  body {
-    margin-left: 0;
+/* Responsive - Tablet and Mobile */
+@media (max-width: 1024px) {
+  .app {
+    padding-left: 0;
   }
 
   .sidebar {
@@ -288,9 +292,19 @@ body {
     display: block;
   }
 
-  /* Adjust app padding */
-  .app {
-    padding: 0;
+  .main {
+    padding: 18px !important;
+  }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .sidebar.mobile-open {
+    left: 0;
   }
 
   .main {
@@ -299,10 +313,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  .sidebar {
-    width: 240px;
-  }
-
   .sidebar.mobile-open {
     left: 0;
   }

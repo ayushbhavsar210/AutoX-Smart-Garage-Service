@@ -519,6 +519,61 @@
   white-space: nowrap;
 }
 
+/* Tablet and Mobile Refinements */
+@media (max-width: 1024px) {
+  .customer-dashboard {
+    flex-direction: column;
+    min-height: 100vh;
+    height: auto;
+    background-attachment: scroll;
+  }
+
+  .customer-nav {
+    width: 100%;
+    height: auto;
+    padding: 18px;
+  }
+
+  .customer-nav.collapsed {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .customer-nav-menu {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .customer-nav-menu li {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+  }
+
+  .customer-content {
+    padding: 18px;
+  }
+
+  .stats-grid,
+  .packages-grid,
+  .packages-grid-overview,
+  .packages-container,
+  .rating-item-grid,
+  .ratings-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-container,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .logout-btn {
   width: 100%;
   background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);

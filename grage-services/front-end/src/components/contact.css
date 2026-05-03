@@ -9,6 +9,41 @@
   background-attachment: scroll;
 }
 
+@media (max-width: 1024px) {
+  .contact-page {
+    padding: 20px 12px;
+  }
+
+  .contact-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 0 12px 32px;
+  }
+
+  .contact-hero h1 {
+    font-size: 34px;
+  }
+
+  .contact-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 24px 12px;
+  }
+
+  .info-cards,
+  .social-links,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-map-section {
+    padding: 28px 20px;
+  }
+
+  .map-container iframe {
+    height: 260px;
+  }
+}
+
 .contact-hero {
   background: linear-gradient(135deg, rgba(220, 38, 38, 0.95) 0%, rgba(153, 27, 27, 0.95) 100%);
   color: white;
@@ -451,6 +486,59 @@
 
   .social-links {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-hero {
+    padding: 32px 16px;
+    margin-bottom: 24px;
+  }
+
+  .contact-hero h1 {
+    font-size: 24px;
+  }
+
+  .contact-hero p {
+    font-size: 14px;
+  }
+
+  .contact-form-section,
+  .social-section,
+  .contact-map-section {
+    padding: 20px 16px;
+  }
+
+  .contact-form-section h2,
+  .contact-info-section h2,
+  .contact-map-section h2 {
+    font-size: 22px;
+  }
+
+  .contact-stats {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .stat {
+    padding: 20px;
+  }
+
+  .stat h3 {
+    font-size: 30px;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+  }
+
+  .action-btn,
+  .submit-btn {
+    width: 100%;
+  }
+
+  .map-container iframe {
+    height: 220px;
   }
 }
 

@@ -824,6 +824,64 @@ body, .admin-dashboard, .admin-login-page {
   color: #27ae60 !important;
 }
 
+/* Tablet and Mobile Refinements */
+@media (max-width: 1024px) {
+  .admin-dashboard {
+    flex-direction: column;
+    min-height: 100vh;
+    height: auto;
+    background-attachment: scroll;
+  }
+
+  .admin-nav {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .admin-nav.collapsed {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .admin-nav-menu {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .admin-nav-menu li {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .nav-item {
+    white-space: nowrap;
+  }
+
+  .admin-content {
+    padding: 18px;
+  }
+
+  .stats-grid,
+  .packages-grid,
+  .packages-container,
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-container,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .admin-dashboard {

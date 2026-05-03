@@ -48,7 +48,7 @@
 }
 
 .navbar-logo {
-  width: 80x;
+  width: 80px;
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
@@ -309,7 +309,7 @@
   position: fixed;
   top: 70px;
   right: 20px;
-  width: 380px;
+  width: min(380px, calc(100vw - 24px));
   max-height: calc(100vh - 100px);
   background: white;
   border-radius: 12px;
@@ -546,6 +546,41 @@
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-2px);
+}
+
+/* Tablet refinements */
+@media (max-width: 1024px) {
+  .navbar-container {
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .navbar-brand {
+    gap: 10px;
+  }
+
+  .navbar-logo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .navbar-text {
+    font-size: 24px;
+  }
+
+  .navbar-tagline {
+    white-space: normal;
+    line-height: 1.35;
+    max-width: 260px;
+  }
+
+  .navbar-auth {
+    gap: 8px;
+  }
+
+  .notification-dropdown {
+    width: min(340px, calc(100vw - 24px));
+  }
 }
 
 /* Mobile Toggle Button */
