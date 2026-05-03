@@ -43,9 +43,22 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-// Enable CORS for frontend
+// Flexible CORS origin validator:
+// - Allows exact matches from `allowedOrigins`
+// - Allows common hosting domains for convenience (vercel and render)
+// - Allows non-browser requests (no origin)
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const lower = origin.toLowerCase();
+      if (lower.endsWith('.vercel.app') || lower.endsWith('.onrender.com')) return callback(null, true);
+    } catch (e) {
+      // ignore
+    }
+    return callback(new Error('Origin not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -53,7 +66,8 @@ app.use(cors({
 
 app.use(express.json());
 
-
+// Health check endpoint (no auth required)
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 app.use('/', userRoutes);
 app.use('/', billingRoutes);
