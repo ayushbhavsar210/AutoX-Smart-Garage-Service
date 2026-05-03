@@ -329,10 +329,8 @@
   font-weight: 700;
   margin-bottom: 4px;
   font-size: 17px;
-  .service-title {
   text-align: center;
   width: 100%;
-}
 }
 
 .service-item.expanded .service-title {
@@ -707,6 +705,156 @@
 
 @media (max-width: 640px) {
   .booking-form { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1024px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "image"
+      "services";
+    padding: 28px 18px;
+  }
+
+  .home-copy h1 {
+    font-size: 24px;
+  }
+
+  .hero-media-img {
+    max-width: 100%;
+    height: 360px;
+  }
+
+  .services-card {
+    max-width: 100%;
+  }
+
+  .service-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-bg {
+    background-attachment: scroll;
+  }
+
+  .hero-animation-section {
+    height: 56vh;
+    min-height: 360px;
+  }
+
+  .hero-animation-title {
+    font-size: 34px;
+  }
+
+  .hero-animation-subtitle {
+    font-size: 16px;
+  }
+
+  .home-hero {
+    padding: 20px 14px;
+    row-gap: 16px;
+  }
+
+  .home-copy h1 {
+    font-size: 22px;
+  }
+
+  .home-copy .lead {
+    font-size: 13px;
+  }
+
+  .hero-media-img {
+    height: 280px;
+  }
+
+  .services-card {
+    padding: 18px 14px;
+  }
+
+  .services-list li {
+    padding: 14px 12px;
+    min-height: auto;
+  }
+
+  .service-item.expanded {
+    padding: 14px;
+  }
+
+  .packages-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-animation-section {
+    height: 48vh;
+    min-height: 300px;
+  }
+
+  .hero-animation-title {
+    font-size: 28px;
+  }
+
+  .hero-animation-subtitle {
+    font-size: 14px;
+  }
+
+  .home-hero {
+    padding: 16px 12px;
+  }
+
+  .home-copy h1 {
+    font-size: 20px;
+  }
+
+  .hero-media-img {
+    height: 220px;
+  }
+
+  .services-card {
+    padding: 16px 12px;
+  }
+
+  .services-card h3 {
+    font-size: 15px;
+  }
+
+  .services-list {
+    gap: 10px;
+  }
+
+  .services-list li {
+    font-size: 13px;
+  }
+
+  .service-title {
+    font-size: 15px;
+  }
+
+  .service-details {
+    font-size: 13px;
+  }
+
+  .action-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .packages-header h3 {
+    font-size: 16px;
+  }
+
+  .package-card {
+    min-width: 0;
+  }
 }
 
 /* Booking Modal Overlay */
