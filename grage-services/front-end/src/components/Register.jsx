@@ -340,7 +340,7 @@ function Register() {
               </div>
 
               <div className="form-checkbox">
-                <label htmlFor="agreeTerms" className="checkbox-label">
+                <div className="checkbox-row">
                   <input
                     type="checkbox"
                     id="agreeTerms"
@@ -349,10 +349,10 @@ function Register() {
                     onChange={handleChange}
                     aria-required="true"
                   />
-                  <span>
+                  <label htmlFor="agreeTerms" className="checkbox-text">
                     I agree to the <a href="#terms">Terms & Conditions</a> and <a href="#privacy">Privacy Policy</a> *
-                  </span>
-                </label>
+                  </label>
+                </div>
                 {errors.agreeTerms && <span className="error-text">⚠️ {errors.agreeTerms}</span>}
               </div>
 
