@@ -10,17 +10,18 @@ root.render(
   </React.StrictMode>
 );
 
-// Register Service Worker for optimized caching
+// Clear any previously cached service worker assets so deployed fixes load immediately.
 if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(() => {
-        console.log('✓ Service Worker registered for optimal performance');
-      })
-      .catch((err) => {
-        console.log('Service Worker registration failed:', err);
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => registration.unregister());
+    });
+
+    if ('caches' in window) {
+      caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => caches.delete(cacheName));
       });
+    }
   });
 }
 
