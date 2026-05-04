@@ -28,6 +28,37 @@ const shouldRetryTransientConnectionFailure = (error) => {
   );
 };
 
+const ensureCommonIndexes = async () => {
+  if (!db) return;
+
+  await Promise.allSettled([
+    db.collection('bookings').createIndexes([
+      { key: { status: 1, createdAt: -1 }, name: 'bookings_status_createdAt' },
+      { key: { scheduledAt: 1, createdAt: -1 }, name: 'bookings_scheduledAt_createdAt' },
+      { key: { userId: 1, createdAt: -1 }, name: 'bookings_userId_createdAt' },
+      { key: { email: 1, createdAt: -1 }, name: 'bookings_email_createdAt' },
+      { key: { paymentStatus: 1, paymentDate: -1 }, name: 'bookings_paymentStatus_paymentDate' },
+      { key: { transactionId: 1 }, name: 'bookings_transactionId' },
+      { key: { razorpayPaymentId: 1 }, name: 'bookings_razorpayPaymentId' },
+      { key: { razorpayOrderId: 1 }, name: 'bookings_razorpayOrderId' },
+    ]),
+    db.collection('service_payments').createIndexes([
+      { key: { status: 1, createdAt: -1 }, name: 'servicePayments_status_createdAt' },
+      { key: { email: 1, createdAt: -1 }, name: 'servicePayments_email_createdAt' },
+      { key: { razorpay_order_id: 1 }, name: 'servicePayments_razorpayOrderId' },
+      { key: { razorpay_payment_id: 1 }, name: 'servicePayments_razorpayPaymentId' },
+      { key: { booking_id: 1 }, name: 'servicePayments_bookingId' },
+    ]),
+    db.collection('payments').createIndexes([
+      { key: { status: 1, createdAt: -1 }, name: 'payments_status_createdAt' },
+      { key: { userId: 1, createdAt: -1 }, name: 'payments_userId_createdAt' },
+      { key: { paymentId: 1 }, name: 'payments_paymentId' },
+    ]),
+    db.collection('users').createIndex({ createdAt: -1 }, { name: 'users_createdAt' }),
+    db.collection('reviews').createIndex({ createdAt: -1 }, { name: 'reviews_createdAt' }),
+  ]);
+};
+
 const connectDB = async () => {
   const uri = process.env.MONGODB_URI;
 
@@ -66,6 +97,7 @@ const connectDB = async () => {
   const maxRetries = Number(process.env.MONGODB_CONNECT_RETRIES || 3);
   let lastError;
 
+
   for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
     try {
       client = new MongoClient(uri, clientOptions);
@@ -102,6 +134,10 @@ const connectDB = async () => {
   const configuredDbName = String(process.env.MONGODB_DB_NAME || '').trim();
   db = configuredDbName ? client.db(configuredDbName) : client.db();
   console.log(`MongoDB Connected (DB: ${db.databaseName})`);
+
+  ensureCommonIndexes().catch((error) => {
+    console.warn('Index warmup failed:', error?.message || error);
+  });
 };
 
 const getDB = () => db;

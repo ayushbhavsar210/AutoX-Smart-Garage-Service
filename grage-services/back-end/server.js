@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const compression = require('compression');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 require('dotenv').config();
@@ -50,6 +51,12 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Gzip compression middleware - reduces response size by ~70%
+app.use(compression({
+  level: 6, // Balance between compression ratio and CPU usage
+  threshold: 1024, // Only compress responses > 1KB
 }));
 
 app.use(express.json());

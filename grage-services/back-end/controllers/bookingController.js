@@ -1,6 +1,8 @@
 const { getDB } = require('../config/db');
 const { upsertVehicleRecord } = require('./vehicleController');
 const sendEmail = require('../utils/sendEmail');
+const { clearCache } = require('../utils/responseCache');
+const { getPaginationParams, buildProjection, formatPaginatedResponse } = require('../utils/queryOptimization');
 
 const toText = (value, fallback = '') => {
   if (value === null || value === undefined) return fallback;
@@ -213,17 +215,39 @@ const getBookings = async (req, res, next) => {
   try {
     const db = getDB();
     const filter = resolveAuthUserFilter(req.user);
-    let records = await db.collection('bookings').find(filter).sort({ id: -1 }).toArray();
+    const { page, limit, skip } = getPaginationParams(req.query);
+
+    // Fields to return for listing (exclude large/unnecessary fields)
+    const projection = buildProjection([
+      'id', 'customerName', 'vehicleNumber', 'serviceName', 
+      'status', 'dateScheduled', 'timeSlot', 'createdAt', 'totalPrice'
+    ]);
+
+    const total = await db.collection('bookings').countDocuments(filter);
+    let records = await db
+      .collection('bookings')
+      .find(filter)
+      .project(projection)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
 
     if (!records.length && req.user) {
       const looseFilter = buildLooseUserFallbackFilter(req.user);
-      records = await db.collection('bookings').find(looseFilter).sort({ id: -1 }).toArray();
+      const looseTotal = await db.collection('bookings').countDocuments(looseFilter);
+      records = await db
+        .collection('bookings')
+        .find(looseFilter)
+        .project(projection)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      return res.status(200).json(formatPaginatedResponse(records, looseTotal, page, limit));
     }
 
-    return res.status(200).json({
-      success: true,
-      data: records
-    });
+    return res.status(200).json(formatPaginatedResponse(records, total, page, limit));
   } catch (error) {
     return next(error);
   }
@@ -354,6 +378,9 @@ const createBooking = async (req, res, next) => {
     };
 
     await db.collection('bookings').insertOne(booking);
+    clearCache('dashboard-metrics');
+    clearCache('revenue-analytics');
+    clearCache('booking-trends');
 
     if (vehicleNumber) {
       const vehicleRecord = await upsertVehicleRecord(
@@ -379,6 +406,9 @@ const createBooking = async (req, res, next) => {
           { id: booking.id },
           { $set: { vehicleId: booking.vehicleId, vehicle_id: booking.vehicle_id } }
         );
+        clearCache('dashboard-metrics');
+        clearCache('revenue-analytics');
+        clearCache('booking-trends');
       }
     }
 
@@ -466,6 +496,9 @@ const createBookingPublic = async (req, res, next) => {
     };
 
     await db.collection('bookings').insertOne(booking);
+    clearCache('dashboard-metrics');
+    clearCache('revenue-analytics');
+    clearCache('booking-trends');
 
     if (vehicleNumber) {
       const vehicleRecord = await upsertVehicleRecord(
@@ -491,6 +524,9 @@ const createBookingPublic = async (req, res, next) => {
           { id: booking.id },
           { $set: { vehicleId: booking.vehicleId, vehicle_id: booking.vehicle_id } }
         );
+        clearCache('dashboard-metrics');
+        clearCache('revenue-analytics');
+        clearCache('booking-trends');
       }
     }
 
@@ -667,6 +703,9 @@ const updateBookingStatus = async (req, res, next) => {
         $set: updateData
       }
     );
+    clearCache('dashboard-metrics');
+    clearCache('revenue-analytics');
+    clearCache('booking-trends');
 
     const updated = await db.collection('bookings').findOne({ id });
     const receiverEmail = toText(updated?.email).toLowerCase();
@@ -798,6 +837,9 @@ const rescheduleBooking = async (req, res, next) => {
         }
       }
     );
+    clearCache('dashboard-metrics');
+    clearCache('revenue-analytics');
+    clearCache('booking-trends');
 
     const updated = await db.collection('bookings').findOne({ id, userId });
     return res.status(200).json({

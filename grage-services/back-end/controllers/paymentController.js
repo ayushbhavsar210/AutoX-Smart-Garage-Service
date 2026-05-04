@@ -2,8 +2,10 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { getDB } = require('../config/db');
 const sendEmail = require('../utils/sendEmail');
+const { clearCache, getCachedValue, makeCacheKey, setCachedValue } = require('../utils/responseCache');
 
 const MERCHANT_NAME = 'AutoX Garage';
+const PAYMENT_LIST_CACHE_TTL_MS = Number(process.env.PAYMENT_LIST_CACHE_TTL_MS || 15000);
 
 const toSafeString = (value, fallback = '') => {
   if (value === null || value === undefined) return fallback;
@@ -320,6 +322,10 @@ const verifyPayment = async (req, res, next) => {
       bookingDetails = await db.collection('bookings').findOne({ id: parsedBookingId });
     }
 
+    clearCache('admin-payments');
+    clearCache('dashboard-metrics');
+    clearCache('revenue-analytics');
+
     const receiverEmail =
       toSafeString(email) ||
       toSafeString(existingPayment?.email) ||
@@ -449,6 +455,18 @@ const getPaymentInvoice = async (req, res, next) => {
 
 const getPayments = async (req, res, next) => {
   try {
+    const cacheKey = makeCacheKey('admin-payments', [
+      req.user?.role || 'guest',
+      req.query?.search || '',
+      req.query?.status || 'all',
+      req.query?.page || 1,
+      req.query?.limit || 20,
+    ]);
+    const cached = getCachedValue(cacheKey);
+    if (cached) {
+      return res.status(200).json(cached);
+    }
+
     const db = getDB();
     const search = toSafeString(req.query?.search).toLowerCase();
     const statusFilter = normalizePaymentStatus(req.query?.status || 'all');
@@ -568,7 +586,7 @@ const getPayments = async (req, res, next) => {
       pending: mergedPayments.filter((item) => item.status === 'pending').length,
     };
 
-    return res.status(200).json({
+    const payload = {
       success: true,
       data: paginated,
       count: paginated.length,
@@ -577,7 +595,10 @@ const getPayments = async (req, res, next) => {
       limit,
       totalPages: Math.max(1, Math.ceil(total / limit)),
       counts,
-    });
+    };
+
+    setCachedValue(cacheKey, payload, PAYMENT_LIST_CACHE_TTL_MS);
+    return res.status(200).json(payload);
   } catch (error) {
     return next(error);
   }

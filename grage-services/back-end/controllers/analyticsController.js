@@ -1,4 +1,7 @@
 const { getDB } = require('../config/db');
+const { getCachedValue, makeCacheKey, setCachedValue } = require('../utils/responseCache');
+
+const DASHBOARD_CACHE_TTL_MS = Number(process.env.DASHBOARD_CACHE_TTL_MS || 30000);
 
 const getMonthStart = (baseDate = new Date()) => new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
 
@@ -66,6 +69,12 @@ const formatTimeAgo = (dateValue) => {
 
 exports.getDashboardMetrics = async (req, res, next) => {
   try {
+    const cacheKey = makeCacheKey('dashboard-metrics', [req.user?.role || 'guest']);
+    const cached = getCachedValue(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const db = getDB();
     const now = new Date();
     const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -243,7 +252,9 @@ exports.getDashboardMetrics = async (req, res, next) => {
       growth,
     };
 
-    return res.json({ success: true, data: metrics });
+    const payload = { success: true, data: metrics };
+    setCachedValue(cacheKey, payload, DASHBOARD_CACHE_TTL_MS);
+    return res.json(payload);
   } catch (error) {
     return next(error);
   }
@@ -251,6 +262,12 @@ exports.getDashboardMetrics = async (req, res, next) => {
 
 exports.getRevenueAnalytics = async (req, res, next) => {
   try {
+    const cacheKey = makeCacheKey('revenue-analytics', [req.user?.role || 'guest', req.query?.period || 'monthly']);
+    const cached = getCachedValue(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const db = getDB();
     const { period } = req.query;
 
@@ -327,7 +344,9 @@ exports.getRevenueAnalytics = async (req, res, next) => {
       topCustomers,
     };
 
-    return res.json({ success: true, data: revenueData });
+    const payload = { success: true, data: revenueData };
+    setCachedValue(cacheKey, payload, DASHBOARD_CACHE_TTL_MS);
+    return res.json(payload);
   } catch (error) {
     return next(error);
   }
@@ -335,6 +354,12 @@ exports.getRevenueAnalytics = async (req, res, next) => {
 
 exports.getBookingTrends = async (req, res, next) => {
   try {
+    const cacheKey = makeCacheKey('booking-trends', [req.user?.role || 'guest', req.query?.period || 'weekly']);
+    const cached = getCachedValue(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const db = getDB();
     const { period } = req.query;
 
@@ -375,7 +400,7 @@ exports.getBookingTrends = async (req, res, next) => {
       return { day: dayLabel, bookings: item.bookings, completed: item.completed, cancelled: item.cancelled };
     });
 
-    return res.json({
+    const payload = {
       success: true,
       data: {
         period: period || 'weekly',
@@ -384,7 +409,9 @@ exports.getBookingTrends = async (req, res, next) => {
         data: data.map((item) => ({ date: item._id, bookings: item.bookings, completed: item.completed, cancelled: item.cancelled })),
         peakHours: []
       }
-    });
+    };
+    setCachedValue(cacheKey, payload, DASHBOARD_CACHE_TTL_MS);
+    return res.json(payload);
   } catch (error) {
     return next(error);
   }

@@ -1,5 +1,6 @@
 const { getDB } = require('../config/db');
 const { ObjectId } = require('mongodb');
+const { getPaginationParams, buildProjection, formatPaginatedResponse } = require('../utils/queryOptimization');
 
 const getNextServiceId = async (db) => {
   const [lastService] = await db
@@ -15,12 +16,24 @@ const getNextServiceId = async (db) => {
 const getServices = async (req, res, next) => {
   try {
     const db = getDB();
-    const services = await db.collection('services').find().sort({ id: 1 }).toArray();
+    const { page, limit, skip } = getPaginationParams(req.query);
 
-    return res.status(200).json({
-      success: true,
-      data: services
-    });
+    // Fields to return for listing (exclude large/unnecessary fields)
+    const projection = buildProjection([
+      'id', 'name', 'description', 'category', 'price', 'duration', 'image', 'createdAt'
+    ]);
+
+    const total = await db.collection('services').countDocuments();
+    const services = await db
+      .collection('services')
+      .find()
+      .project(projection)
+      .sort({ id: 1 })
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    return res.status(200).json(formatPaginatedResponse(services, total, page, limit));
   } catch (error) {
     return next(error);
   }

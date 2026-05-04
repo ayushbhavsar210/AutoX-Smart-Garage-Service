@@ -33,9 +33,12 @@ const GalleryItem = memo(({ image, index, onClick }) => (
 
 GalleryItem.displayName = 'GalleryItem';
 
+const ITEMS_PER_PAGE = 12; // 12 images per page to avoid rendering too many
+
 function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const assetPath = useCallback((path) => encodeURI(path), []);
 
@@ -192,8 +195,21 @@ function Gallery() {
     return allImages.filter(img => img.category === selectedCategory);
   }, [selectedCategory, allImages]);
 
+  // Pagination logic: calculate start and end indices
+  const paginatedImages = useMemo(() => {
+    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIdx = startIdx + ITEMS_PER_PAGE;
+    return filteredImages.slice(startIdx, endIdx);
+  }, [filteredImages, currentPage]);
+
+  // Calculate total pages
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredImages.length / ITEMS_PER_PAGE);
+  }, [filteredImages.length]);
+
   const handleCategoryChange = useCallback((category) => {
     setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page when category changes
   }, []);
 
   const handleImageClick = useCallback((image) => {
@@ -203,6 +219,20 @@ function Gallery() {
   const handleCloseImage = useCallback(() => {
     setSelectedImage(null);
   }, []);
+
+  const handleNextPage = useCallback(() => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePrevPage = useCallback(() => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
 
   return (
     <div className="gallery-page">
@@ -239,7 +269,7 @@ function Gallery() {
       </div>
 
       <div className="gallery-grid">
-        {filteredImages.map((image, index) => (
+        {paginatedImages.map((image, index) => (
           <GalleryItem 
             key={image.id}
             image={image}
@@ -248,6 +278,29 @@ function Gallery() {
           />
         ))}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="gallery-pagination">
+          <button 
+            className="pagination-btn"
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+          >
+            ← Previous
+          </button>
+          <div className="pagination-info">
+            Page {currentPage} of {totalPages} ({filteredImages.length} images)
+          </div>
+          <button 
+            className="pagination-btn"
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next →
+          </button>
+        </div>
+      )}
 
       {selectedImage && (
         <div className="lightbox" onClick={handleCloseImage}>
