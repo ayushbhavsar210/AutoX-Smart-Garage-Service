@@ -1,4 +1,4 @@
-const LOCAL_API_BASE_URL = 'http://localhost:5000';
+const LOCAL_API_BASE_URL = 'https://autox-smart-garage-service.onrender.com';
 const PRODUCTION_API_BASE_URL = 'https://autox-smart-garage-service.onrender.com';
 
 export const API_BASE_URL = (

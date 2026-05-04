@@ -16,9 +16,6 @@ const buildCandidateUrls = (path) => {
   if (!isProduction) {
     // CRA dev proxy fallback (relative path)
     candidates.push(normalizedPath);
-
-    // Explicit local backend fallback for local development.
-    candidates.push(`http://localhost:5000${normalizedPath}`);
   }
 
   return Array.from(new Set(candidates));
