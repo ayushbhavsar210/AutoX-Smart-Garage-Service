@@ -326,32 +326,36 @@ const verifyPayment = async (req, res, next) => {
       toSafeString(bookingDetails?.email);
 
     if (receiverEmail) {
-      const user = await db.collection('users').findOne({ email: receiverEmail.toLowerCase() });
-      const bookingDateValue = bookingDetails?.date
-        || (bookingDetails?.scheduledAt
-          ? new Date(bookingDetails.scheduledAt).toLocaleDateString('en-IN')
-          : bookingDetails?.createdAt
-            ? new Date(bookingDetails.createdAt).toLocaleDateString('en-IN')
-            : new Date().toLocaleDateString('en-IN'));
+      try {
+        const user = await db.collection('users').findOne({ email: receiverEmail.toLowerCase() });
+        const bookingDateValue = bookingDetails?.date
+          || (bookingDetails?.scheduledAt
+            ? new Date(bookingDetails.scheduledAt).toLocaleDateString('en-IN')
+            : bookingDetails?.createdAt
+              ? new Date(bookingDetails.createdAt).toLocaleDateString('en-IN')
+              : new Date().toLocaleDateString('en-IN'));
 
-      const emailHtml = buildBookingSuccessEmailTemplate({
-        userName:
-          toSafeString(bookingDetails?.customerName)
-          || toSafeString(user?.name)
-          || toSafeString(user?.fullName)
-          || toSafeString(receiverEmail.split('@')[0], 'Customer'),
-        serviceName: toSafeString(bookingDetails?.serviceName) || toSafeString(service_name),
-        vehicleNumber: toSafeString(bookingDetails?.vehicleNumber, 'N/A'),
-        bookingDate: toSafeString(bookingDateValue, 'N/A'),
-        amountPaid: Number(amount),
-        transactionId: toSafeString(razorpayPaymentId, 'N/A'),
-      });
+        const emailHtml = buildBookingSuccessEmailTemplate({
+          userName:
+            toSafeString(bookingDetails?.customerName)
+            || toSafeString(user?.name)
+            || toSafeString(user?.fullName)
+            || toSafeString(receiverEmail.split('@')[0], 'Customer'),
+          serviceName: toSafeString(bookingDetails?.serviceName) || toSafeString(service_name),
+          vehicleNumber: toSafeString(bookingDetails?.vehicleNumber, 'N/A'),
+          bookingDate: toSafeString(bookingDateValue, 'N/A'),
+          amountPaid: Number(amount),
+          transactionId: toSafeString(razorpayPaymentId, 'N/A'),
+        });
 
-      await sendEmail(
-        receiverEmail,
-        `${MERCHANT_NAME} | Payment Successful`,
-        emailHtml
-      );
+        await sendEmail(
+          receiverEmail,
+          `${MERCHANT_NAME} | Payment Successful`,
+          emailHtml
+        );
+      } catch (emailError) {
+        console.warn('Payment confirmation email failed:', emailError?.message || emailError);
+      }
     }
 
     return res.status(200).json({
