@@ -13,7 +13,6 @@ import Contact from "./components/contact";
 import AdminLogin from "./components/AdminLogin";
 import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword";
-import LoadingAnimation from "./components/LoadingAnimation";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { BillingProvider } from "./context/BillingContext";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -42,19 +41,7 @@ const ServicePayment = React.lazy(() => import("./components/ServicePayment"));
 const PaymentSuccess = React.lazy(() => import("./components/PaymentSuccess"));
 
 // Fallback loading component for lazy routes
-const LazyLoadFallback = () => (
-  <div className="lazy-load-fallback" style={{ 
-    padding: '40px', 
-    textAlign: 'center', 
-    color: '#666',
-    minHeight: '200px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }}>
-    <LoadingAnimation />
-  </div>
-);
+const LazyLoadFallback = () => null;
 
 // Simple route transition to animate page changes when navigating from the navbar
 function ProtectedAdminRoute({ children }) {
@@ -85,17 +72,13 @@ function AnimatedRoutes() {
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
   const [transitionStage, setTransitionStage] = useState('fadeIn');
-  const [showVideo, setShowVideo] = useState(false);
 
-  // Start fade-out when the url changes
   useEffect(() => {
     if (location.pathname !== displayLocation.pathname) {
       setTransitionStage('fadeOut');
-      setShowVideo(true);
     }
   }, [location, displayLocation.pathname]);
 
-  // After fade-out completes, swap to the new route and fade back in
   useEffect(() => {
     if (transitionStage === 'fadeOut') {
       const timeout = setTimeout(() => {
@@ -106,26 +89,8 @@ function AnimatedRoutes() {
     }
   }, [transitionStage, location]);
 
-  const handleVideoComplete = () => {
-    setShowVideo(false);
-  };
-
   return (
     <>
-      {showVideo && <LoadingAnimation onComplete={handleVideoComplete} autoHideMs={250} />}
-      {transitionStage === 'fadeOut' && (
-        <>
-          <div className="route-overlay" aria-hidden>
-            <div className="route-brand">
-              <span className="brand-letter">A</span>
-              <span className="brand-letter">u</span>
-              <span className="brand-letter">t</span>
-              <span className="brand-letter">o</span>
-              <span className="brand-letter">X</span>
-            </div>
-          </div>
-        </>
-      )}
       <div className={`page-transition ${transitionStage}`}>
         <Suspense fallback={<LazyLoadFallback />}>
           <Routes location={displayLocation}>
@@ -181,46 +146,12 @@ function AnimatedRoutes() {
 }
 
 function App() {
-  const [showLoading, setShowLoading] = useState(() => {
-    if (typeof document === 'undefined') {
-      return true;
-    }
-
-    return document.readyState !== 'complete';
-  });
-
-  const handleLoadingComplete = () => {
-    setShowLoading(false);
-  };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined;
-    }
-
-    if (document.readyState === 'complete') {
-      setShowLoading(false);
-      return undefined;
-    }
-
-    const handleWindowLoad = () => {
-      setShowLoading(false);
-    };
-
-    window.addEventListener('load', handleWindowLoad);
-
-    return () => {
-      window.removeEventListener('load', handleWindowLoad);
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
           <NotificationProvider>
             <BillingProvider>
-              {showLoading && <LoadingAnimation onComplete={handleLoadingComplete} autoHideMs={500} svgOnly={true} />}
               <div className="app">
                 {/* Navbar - Always visible */}
                 <Navbar />
