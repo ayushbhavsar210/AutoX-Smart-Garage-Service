@@ -217,10 +217,11 @@ const getBookings = async (req, res, next) => {
     const filter = resolveAuthUserFilter(req.user);
     const { page, limit, skip } = getPaginationParams(req.query);
 
-    // Fields to return for listing (exclude large/unnecessary fields)
+    // Fields to return for listing (include scheduling and mechanic-related fields)
     const projection = buildProjection([
-      'id', 'customerName', 'vehicleNumber', 'serviceName', 
-      'status', 'dateScheduled', 'timeSlot', 'createdAt', 'totalPrice'
+      'id', '_id', 'customerName', 'vehicleNumber', 'serviceName',
+      'status', 'date', 'bookingDate', 'scheduledAt', 'timeSlot', 'preferredSlot',
+      'mechanicName', 'mechanic', 'mechanic_id', 'createdAt', 'totalPrice'
     ]);
 
     const total = await db.collection('bookings').countDocuments(filter);
@@ -233,6 +234,23 @@ const getBookings = async (req, res, next) => {
       .limit(limit)
       .toArray();
 
+    // Enrich records with fallback fields (customer name, vehicle info, bookingDate, mechanicName)
+    records = await enrichBookings(db, records);
+
+    // Normalize shape returned to front-end: ensure `date`, `time`, and `mechanicName` are present
+    records = records.map((r) => ({
+      _id: r._id || r._id,
+      id: r.id || r._id || r._id,
+      serviceName: r.serviceName || r.service || '',
+      service: r.serviceName || r.service || '',
+      date: r.date || r.bookingDate || (r.scheduledAt ? new Date(r.scheduledAt).toISOString().split('T')[0] : ''),
+      time: r.time || r.timeSlot || r.preferredSlot || (r.scheduledAt ? new Date(r.scheduledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : ''),
+      status: r.status || r.bookingStatus || 'pending',
+      mechanic: r.mechanicName || r.mechanic || '—',
+      vehicleNumber: r.vehicleNumber || r.vehicle_number || '—',
+      raw: r,
+    }));
+
     if (!records.length && req.user) {
       const looseFilter = buildLooseUserFallbackFilter(req.user);
       const looseTotal = await db.collection('bookings').countDocuments(looseFilter);
@@ -244,6 +262,21 @@ const getBookings = async (req, res, next) => {
         .skip(skip)
         .limit(limit)
         .toArray();
+
+      records = await enrichBookings(db, records);
+      records = records.map((r) => ({
+        _id: r._id || r._id,
+        id: r.id || r._id || r._id,
+        serviceName: r.serviceName || r.service || '',
+        service: r.serviceName || r.service || '',
+        date: r.date || r.bookingDate || (r.scheduledAt ? new Date(r.scheduledAt).toISOString().split('T')[0] : ''),
+        time: r.time || r.timeSlot || r.preferredSlot || (r.scheduledAt ? new Date(r.scheduledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : ''),
+        status: r.status || r.bookingStatus || 'pending',
+        mechanic: r.mechanicName || r.mechanic || '—',
+        vehicleNumber: r.vehicleNumber || r.vehicle_number || '—',
+        raw: r,
+      }));
+
       return res.status(200).json(formatPaginatedResponse(records, looseTotal, page, limit));
     }
 

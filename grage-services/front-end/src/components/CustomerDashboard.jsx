@@ -111,6 +111,8 @@ function CustomerDashboard() {
   const [userRating, setUserRating] = useState('—');
   const [loadingData, setLoadingData] = useState(true);
   const [apiErrors, setApiErrors] = useState({});
+  const [bookingsRaw, setBookingsRaw] = useState([]);
+  const [showRawBookingDebug, setShowRawBookingDebug] = useState(false);
   const [recentPaymentSuccess, setRecentPaymentSuccess] = useState(null);
   const [ratingInsights, setRatingInsights] = useState({
     adminSources: [],
@@ -232,6 +234,7 @@ function CustomerDashboard() {
           : [];
 
       console.log('✅ Parsed bookings:', { allBookings, historyBookings });
+      setBookingsRaw(allBookings);
 
       const historyRatings = historyBookings
         .filter((item) => Number(item?.rating) > 0)
@@ -1067,12 +1070,25 @@ function CustomerDashboard() {
                   {apiErrors.bookings ? 'No data found (API error)' : 'No data found'}
                 </div>
               ) : (
-                <CommonTable 
+                      <>
+                      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8}}>
+                        <div />
+                        <div>
+                          <button className="btn-secondary" onClick={() => setShowRawBookingDebug(v => !v)} style={{marginRight:8}}>
+                            {showRawBookingDebug ? 'Hide raw response' : 'Show raw booking JSON'}
+                          </button>
+                        </div>
+                      </div>
+                      {showRawBookingDebug && (
+                        <pre style={{maxHeight:200,overflow:'auto',background:'#f6f8fa',padding:12,borderRadius:8,border:'1px solid #e5e7eb'}}>{JSON.stringify(bookingsRaw?.[0] || {}, null, 2)}</pre>
+                      )}
+                      <CommonTable 
                   columns={bookingColumns} 
                   data={upcomingBookings} 
                   fileName="my-bookings"
                   showSelection={false}
-                />
+                      />
+                      </>
               )}
             </div>
           </div>
