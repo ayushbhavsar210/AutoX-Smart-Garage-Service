@@ -1,24 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './LoadingAnimation.css';
 
-const LoadingAnimation = ({ onComplete }) => {
+const LoadingAnimation = ({ onComplete, autoHideMs = 750, fadeOutMs = 300 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
   const animationVideoSrc = '/img/web-images/animation/loading.mp4';
 
   useEffect(() => {
-    // Hide the loading animation after 750ms for fast page load
-    // Callback happens after 300ms fade-out animation
+    if (autoHideMs === null) {
+      return undefined;
+    }
+
     const timer = setTimeout(() => {
       setIsVisible(false);
       if (onComplete) {
-        // Delay callback to allow fade-out animation to complete
-        setTimeout(onComplete, 300);
+        setTimeout(onComplete, fadeOutMs);
       }
-    }, 750);
+    }, autoHideMs);
 
     return () => clearTimeout(timer);
-  }, [onComplete]);
+  }, [onComplete, autoHideMs, fadeOutMs]);
 
   const handleVideoEnd = () => {
     setIsVisible(false);

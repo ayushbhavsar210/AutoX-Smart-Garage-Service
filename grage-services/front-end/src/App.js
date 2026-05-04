@@ -112,7 +112,7 @@ function AnimatedRoutes() {
 
   return (
     <>
-      {showVideo && <LoadingAnimation onComplete={handleVideoComplete} />}
+      {showVideo && <LoadingAnimation onComplete={handleVideoComplete} autoHideMs={250} />}
       {transitionStage === 'fadeOut' && (
         <>
           <div className="route-overlay" aria-hidden>
@@ -181,11 +181,38 @@ function AnimatedRoutes() {
 }
 
 function App() {
-  const [showLoading, setShowLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(() => {
+    if (typeof document === 'undefined') {
+      return true;
+    }
+
+    return document.readyState !== 'complete';
+  });
 
   const handleLoadingComplete = () => {
     setShowLoading(false);
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    if (document.readyState === 'complete') {
+      setShowLoading(false);
+      return undefined;
+    }
+
+    const handleWindowLoad = () => {
+      setShowLoading(false);
+    };
+
+    window.addEventListener('load', handleWindowLoad);
+
+    return () => {
+      window.removeEventListener('load', handleWindowLoad);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -193,7 +220,7 @@ function App() {
         <AuthProvider>
           <NotificationProvider>
             <BillingProvider>
-              {showLoading && <LoadingAnimation onComplete={handleLoadingComplete} />}
+              {showLoading && <LoadingAnimation onComplete={handleLoadingComplete} autoHideMs={null} />}
               <div className="app">
                 {/* Navbar - Always visible */}
                 <Navbar />
