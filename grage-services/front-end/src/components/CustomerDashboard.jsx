@@ -255,24 +255,29 @@ function CustomerDashboard() {
         });
       }
 
+      // Helper to resolve dates/times/mechanics from various backend shapes
+      const resolveDate = (b) => b.date || b.bookingDate || toSafeDate(b.scheduledAt) || toSafeDate(b.scheduled_at) || toSafeDate(b.createdAt) || toSafeDate(b.created_at) || '';
+      const resolveTime = (b) => b.time || b.timeSlot || b.preferredSlot || toSafeTime(b.scheduledAt) || toSafeTime(b.scheduled_at) || '';
+      const resolveMechanic = (b) => b.mechanicName || b.mechanic || b.mechanic_name || b.assignedTo || b.assigned_mechanic || b.mechanicId || '—';
+
       // Set completed bookings as service history
       setServiceHistory(historyBookings.map(b => ({
         id: b._id || b.id,
-        date: b.date || toSafeDate(b.scheduledAt),
+        date: resolveDate(b),
         service: b.serviceName || b.service || '',
         amount: b.amount ? `₹${b.amount}` : '—',
         status: b.status || 'completed',
-        mechanic: b.mechanicName || b.mechanic || '—',
+        mechanic: resolveMechanic(b),
       })));
 
       // Show all bookings for user so completed records are still visible in My Bookings tab.
       setUpcomingBookings(allBookings.map(b => ({
         id: b._id || b.id,
         service: b.serviceName || b.service || '',
-        date: b.date || toSafeDate(b.scheduledAt),
-        time: b.time || toSafeTime(b.scheduledAt),
-        status: b.status || 'Confirmed',
-        mechanic: b.mechanicName || b.mechanic || '—',
+        date: resolveDate(b),
+        time: resolveTime(b),
+        status: b.status || b.bookingStatus || 'Confirmed',
+        mechanic: resolveMechanic(b),
       })));
 
       console.log('✅ Bookings and history data set successfully');
