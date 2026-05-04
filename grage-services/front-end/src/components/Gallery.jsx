@@ -1,47 +1,80 @@
-import React, { useState, useCallback, useMemo, memo } from 'react';
+/**
+ * OPTIMIZED GALLERY COMPONENT - Complete Replacement
+ * 
+ * Copy this entire code and replace your current Gallery.jsx
+ * 
+ * Features:
+ * - Infinite scroll with Intersection Observer
+ * - Initial load of 8 images
+ * - Skeleton loaders while loading more
+ * - Proper image dimensions (no layout shift)
+ * - Memoized components for performance
+ * - Smooth loading animations
+ */
+
+import React, { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
 import './Gallery.css';
 import LazyImage from './LazyImage';
+import SkeletonLoader from './SkeletonLoader';
 
-// Memoized gallery item for performance
-const GalleryItem = memo(({ image, index, onClick }) => (
+// Memoized gallery item with optimized rendering
+const GalleryItem = memo(({ image, index, onClick, isLoading }) => (
   <div 
-    key={image.id} 
+    key={image?.id || `skeleton-${index}`}
     className="gallery-item"
-    onClick={() => onClick(image)}
+    onClick={() => !isLoading && onClick(image)}
     role="button"
-    tabIndex={0}
-    onKeyPress={(e) => e.key === 'Enter' && onClick(image)}
+    tabIndex={isLoading ? -1 : 0}
+    onKeyPress={(e) => !isLoading && e.key === 'Enter' && onClick(image)}
+    style={{ cursor: isLoading ? 'default' : 'pointer' }}
   >
     <div className="gallery-image-wrapper">
-      <LazyImage 
-        src={image.image} 
-        alt={image.title}
-        aspectRatio="4/3"
-        priority={index < 8}
-        className="gallery-img"
-      />
-      <div className="gallery-overlay">
-        <h3>{image.title}</h3>
-        <p>{image.description}</p>
-        <span className="view-btn">View Details</span>
-      </div>
+      {isLoading ? (
+        <SkeletonLoader />
+      ) : (
+        <>
+          <LazyImage 
+            src={image.image} 
+            alt={image.title}
+            aspectRatio="4/3"
+            priority={index < 8}
+            className="gallery-img"
+            width={400}
+            height={300}
+          />
+          <div className="gallery-overlay">
+            <h3>{image.title}</h3>
+            <p>{image.description}</p>
+            <span className="view-btn">View Details</span>
+          </div>
+        </>
+      )}
     </div>
   </div>
 ), (prevProps, nextProps) => {
-  return prevProps.image.id === nextProps.image.id && prevProps.index === nextProps.index;
+  // Custom comparison to prevent unnecessary re-renders
+  if (prevProps.isLoading !== nextProps.isLoading) return false;
+  if (prevProps.image?.id !== nextProps.image?.id) return false;
+  return true;
 });
 
 GalleryItem.displayName = 'GalleryItem';
 
-const ITEMS_PER_PAGE = 12; // 12 images per page to avoid rendering too many
+const INITIAL_LOAD = 8;   // Load 8 images initially
+const LOAD_MORE_COUNT = 8; // Load 8 more on each scroll
 
 function Gallery() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [displayedCount, setDisplayedCount] = useState(INITIAL_LOAD);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  const sentinelRef = useRef(null);
+  const observerRef = useRef(null);
   
   const assetPath = useCallback((path) => encodeURI(path), []);
 
+  // Gallery images data
   const galleryImages = useMemo(() => ({
     regularService: [
       {
@@ -184,55 +217,80 @@ function Gallery() {
     ]
   }), [assetPath]);
 
+  // Combine all images
   const allImages = useMemo(() => [
     ...galleryImages.regularService,
     ...galleryImages.breakdown,
     ...galleryImages.modification
   ], [galleryImages]);
 
+  // Filter images by category
   const filteredImages = useMemo(() => {
     if (selectedCategory === 'all') return allImages;
     return allImages.filter(img => img.category === selectedCategory);
   }, [selectedCategory, allImages]);
 
-  // Pagination logic: calculate start and end indices
-  const paginatedImages = useMemo(() => {
-    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIdx = startIdx + ITEMS_PER_PAGE;
-    return filteredImages.slice(startIdx, endIdx);
-  }, [filteredImages, currentPage]);
+  // Slice to show only displayed count
+  const visibleImages = useMemo(() => {
+    return filteredImages.slice(0, displayedCount);
+  }, [filteredImages, displayedCount]);
 
-  // Calculate total pages
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredImages.length / ITEMS_PER_PAGE);
-  }, [filteredImages.length]);
+  // Create skeleton loaders for loading state
+  const skeletons = useMemo(() => {
+    if (!isLoadingMore) return [];
+    return Array(LOAD_MORE_COUNT).fill(null);
+  }, [isLoadingMore]);
 
+  // Setup Intersection Observer for infinite scroll
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '200px', // Start loading 200px before reaching bottom
+      threshold: 0.1
+    };
+
+    const callback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !isLoadingMore && displayedCount < filteredImages.length) {
+          setIsLoadingMore(true);
+          // Simulate network delay (300ms)
+          setTimeout(() => {
+            setDisplayedCount(prev => Math.min(prev + LOAD_MORE_COUNT, filteredImages.length));
+            setIsLoadingMore(false);
+          }, 300);
+        }
+      });
+    };
+
+    observerRef.current = new IntersectionObserver(callback, options);
+    
+    if (sentinelRef.current) {
+      observerRef.current.observe(sentinelRef.current);
+    }
+
+    return () => {
+      if (observerRef.current && sentinelRef.current) {
+        observerRef.current.unobserve(sentinelRef.current);
+      }
+    };
+  }, [displayedCount, filteredImages.length, isLoadingMore]);
+
+  // Handle category change
   const handleCategoryChange = useCallback((category) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset to first page when category changes
+    setDisplayedCount(INITIAL_LOAD); // Reset to initial load
+    setIsLoadingMore(false);
   }, []);
 
+  // Handle image click
   const handleImageClick = useCallback((image) => {
     setSelectedImage(image);
   }, []);
 
+  // Handle lightbox close
   const handleCloseImage = useCallback(() => {
     setSelectedImage(null);
   }, []);
-
-  const handleNextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [currentPage, totalPages]);
-
-  const handlePrevPage = useCallback(() => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [currentPage]);
 
   return (
     <div className="gallery-page">
@@ -242,66 +300,70 @@ function Gallery() {
       </div>
 
       <div className="gallery-filters">
-        <button 
-          className={`filter-btn ${selectedCategory === 'all' ? 'active' : ''}`}
-          onClick={() => handleCategoryChange('all')}
-        >
-          All Services
-        </button>
-        <button 
-          className={`filter-btn ${selectedCategory === 'regular' ? 'active' : ''}`}
-          onClick={() => handleCategoryChange('regular')}
-        >
-          Regular Services
-        </button>
-        <button 
-          className={`filter-btn ${selectedCategory === 'breakdown' ? 'active' : ''}`}
-          onClick={() => handleCategoryChange('breakdown')}
-        >
-          Breakdown
-        </button>
-        <button 
-          className={`filter-btn ${selectedCategory === 'modification' ? 'active' : ''}`}
-          onClick={() => handleCategoryChange('modification')}
-        >
-          Modification
-        </button>
+        {['all', 'regular', 'breakdown', 'modification'].map(category => (
+          <button 
+            key={category}
+            className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
+            onClick={() => handleCategoryChange(category)}
+          >
+            {category === 'all' && 'All Services'}
+            {category === 'regular' && 'Regular Services'}
+            {category === 'breakdown' && 'Breakdown'}
+            {category === 'modification' && 'Modification'}
+          </button>
+        ))}
       </div>
 
       <div className="gallery-grid">
-        {paginatedImages.map((image, index) => (
+        {/* Render visible images */}
+        {visibleImages.map((image, index) => (
           <GalleryItem 
             key={image.id}
             image={image}
             index={index}
             onClick={handleImageClick}
+            isLoading={false}
+          />
+        ))}
+
+        {/* Show skeleton loaders while loading more */}
+        {skeletons.map((_, index) => (
+          <GalleryItem
+            key={`skeleton-${index}`}
+            image={null}
+            index={visibleImages.length + index}
+            onClick={() => {}}
+            isLoading={true}
           />
         ))}
       </div>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="gallery-pagination">
-          <button 
-            className="pagination-btn"
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-          >
-            ← Previous
-          </button>
-          <div className="pagination-info">
-            Page {currentPage} of {totalPages} ({filteredImages.length} images)
-          </div>
-          <button 
-            className="pagination-btn"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next →
-          </button>
+      {/* Intersection observer sentinel - triggers load more */}
+      <div ref={sentinelRef} className="gallery-sentinel" />
+
+      {/* Loading indicator at bottom */}
+      {isLoadingMore && (
+        <div className="gallery-loading">
+          <div className="loading-spinner" />
+          <p>Loading more images...</p>
         </div>
       )}
 
+      {/* End of gallery message */}
+      {!isLoadingMore && displayedCount >= filteredImages.length && filteredImages.length > 0 && (
+        <div className="gallery-end">
+          <p>✓ All images loaded ({filteredImages.length} total)</p>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {filteredImages.length === 0 && (
+        <div className="gallery-empty">
+          <p>No images found for this category.</p>
+        </div>
+      )}
+
+      {/* Lightbox modal */}
       {selectedImage && (
         <div className="lightbox" onClick={handleCloseImage}>
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
@@ -312,6 +374,8 @@ function Gallery() {
               aspectRatio="16/9"
               priority={true}
               className="lightbox-img"
+              width={900}
+              height={506}
             />
             <div className="lightbox-info">
               <h2>{selectedImage.title}</h2>
