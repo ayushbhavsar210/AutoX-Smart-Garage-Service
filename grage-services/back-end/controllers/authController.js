@@ -6,6 +6,7 @@ const { ObjectId } = require('mongodb');
 const generateOTP = require("../utils/otp");
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
+const { getFrontendBaseUrl } = require('../utils/frontendOrigin');
 
 const OTP_EXPIRY_MINUTES = 5;
 const PASSWORD_RESET_EXPIRY_MINUTES = 60;
@@ -530,8 +531,8 @@ const forgotPassword = async (req, res, next) => {
       createdAt: new Date()
     });
 
-    // Build reset link
-    const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Build reset link from the requesting frontend origin when possible.
+    const frontendBaseUrl = getFrontendBaseUrl(req);
     const resetLink = `${frontendBaseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     // Send email

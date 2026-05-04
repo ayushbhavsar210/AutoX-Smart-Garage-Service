@@ -31,17 +31,11 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const authMiddleware = require('./middleware/authMiddleware');
 const bookingController = require('./controllers/bookingController');
 const billingController = require('./controllers/billingController');
+const { getConfiguredOrigins, isAllowedFrontendOrigin } = require('./utils/frontendOrigin');
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:5000',
-  'https://auto-x-smart-garage-service-wx82.vercel.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+const allowedOrigins = getConfiguredOrigins();
 
 // Flexible CORS origin validator:
 // - Allows exact matches from `allowedOrigins`
@@ -50,13 +44,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    try {
-      const lower = origin.toLowerCase();
-      if (lower.endsWith('.vercel.app') || lower.endsWith('.onrender.com')) return callback(null, true);
-    } catch (e) {
-      // ignore
-    }
+    if (allowedOrigins.includes(origin) || isAllowedFrontendOrigin(origin)) return callback(null, true);
     return callback(new Error('Origin not allowed by CORS'));
   },
   credentials: true,
