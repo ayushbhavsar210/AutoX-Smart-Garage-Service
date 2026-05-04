@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { getDB } = require('../config/db');
+const { ObjectId } = require('mongodb');
 const sendEmail = require('../utils/sendEmail');
 const { clearCache, getCachedValue, makeCacheKey, setCachedValue } = require('../utils/responseCache');
 
@@ -299,9 +300,24 @@ const verifyPayment = async (req, res, next) => {
 
     const parsedBookingId = Number(bookingId);
     let bookingDetails = null;
+
+    // Build a flexible filter so we can match numeric booking ids, string ids or MongoDB ObjectIds.
+    let bookingFilter = null;
     if (Number.isFinite(parsedBookingId) && parsedBookingId > 0) {
+      bookingFilter = { id: parsedBookingId };
+    } else if (String(bookingId) && /^[0-9a-fA-F]{24}$/.test(String(bookingId))) {
+      try {
+        bookingFilter = { _id: new ObjectId(String(bookingId)) };
+      } catch (_e) {
+        bookingFilter = { id: String(bookingId) };
+      }
+    } else if (bookingId) {
+      bookingFilter = { id: String(bookingId) };
+    }
+
+    if (bookingFilter) {
       await db.collection('bookings').updateOne(
-        { id: parsedBookingId },
+        bookingFilter,
         {
           $set: {
             paymentStatus: 'Paid',
@@ -319,7 +335,7 @@ const verifyPayment = async (req, res, next) => {
         }
       );
 
-      bookingDetails = await db.collection('bookings').findOne({ id: parsedBookingId });
+      bookingDetails = await db.collection('bookings').findOne(bookingFilter);
     }
 
     clearCache('admin-payments');
@@ -332,36 +348,40 @@ const verifyPayment = async (req, res, next) => {
       toSafeString(bookingDetails?.email);
 
     if (receiverEmail) {
-      try {
-        const user = await db.collection('users').findOne({ email: receiverEmail.toLowerCase() });
-        const bookingDateValue = bookingDetails?.date
-          || (bookingDetails?.scheduledAt
-            ? new Date(bookingDetails.scheduledAt).toLocaleDateString('en-IN')
-            : bookingDetails?.createdAt
-              ? new Date(bookingDetails.createdAt).toLocaleDateString('en-IN')
-              : new Date().toLocaleDateString('en-IN'));
+      setImmediate(() => {
+        (async () => {
+          try {
+            const user = await db.collection('users').findOne({ email: receiverEmail.toLowerCase() });
+            const bookingDateValue = bookingDetails?.date
+              || (bookingDetails?.scheduledAt
+                ? new Date(bookingDetails.scheduledAt).toLocaleDateString('en-IN')
+                : bookingDetails?.createdAt
+                  ? new Date(bookingDetails.createdAt).toLocaleDateString('en-IN')
+                  : new Date().toLocaleDateString('en-IN'));
 
-        const emailHtml = buildBookingSuccessEmailTemplate({
-          userName:
-            toSafeString(bookingDetails?.customerName)
-            || toSafeString(user?.name)
-            || toSafeString(user?.fullName)
-            || toSafeString(receiverEmail.split('@')[0], 'Customer'),
-          serviceName: toSafeString(bookingDetails?.serviceName) || toSafeString(service_name),
-          vehicleNumber: toSafeString(bookingDetails?.vehicleNumber, 'N/A'),
-          bookingDate: toSafeString(bookingDateValue, 'N/A'),
-          amountPaid: Number(amount),
-          transactionId: toSafeString(razorpayPaymentId, 'N/A'),
-        });
+            const emailHtml = buildBookingSuccessEmailTemplate({
+              userName:
+                toSafeString(bookingDetails?.customerName)
+                || toSafeString(user?.name)
+                || toSafeString(user?.fullName)
+                || toSafeString(receiverEmail.split('@')[0], 'Customer'),
+              serviceName: toSafeString(bookingDetails?.serviceName) || toSafeString(service_name),
+              vehicleNumber: toSafeString(bookingDetails?.vehicleNumber, 'N/A'),
+              bookingDate: toSafeString(bookingDateValue, 'N/A'),
+              amountPaid: Number(amount),
+              transactionId: toSafeString(razorpayPaymentId, 'N/A'),
+            });
 
-        await sendEmail(
-          receiverEmail,
-          `${MERCHANT_NAME} | Payment Successful`,
-          emailHtml
-        );
-      } catch (emailError) {
-        console.warn('Payment confirmation email failed:', emailError?.message || emailError);
-      }
+            await sendEmail(
+              receiverEmail,
+              `${MERCHANT_NAME} | Payment Successful`,
+              emailHtml
+            );
+          } catch (emailError) {
+            console.warn('Payment confirmation email failed:', emailError?.message || emailError);
+          }
+        })();
+      });
     }
 
     return res.status(200).json({
