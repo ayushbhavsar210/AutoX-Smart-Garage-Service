@@ -7,13 +7,15 @@ const LoadingAnimation = ({ onComplete }) => {
   const animationVideoSrc = '/img/web-images/animation/loading.mp4';
 
   useEffect(() => {
-    // Hide the loading animation after video ends or after a short timeout.
+    // Hide the loading animation after 750ms for fast page load
+    // Callback happens after 300ms fade-out animation
     const timer = setTimeout(() => {
       setIsVisible(false);
       if (onComplete) {
-        onComplete();
+        // Delay callback to allow fade-out animation to complete
+        setTimeout(onComplete, 300);
       }
-    }, 2600);
+    }, 750);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -21,7 +23,7 @@ const LoadingAnimation = ({ onComplete }) => {
   const handleVideoEnd = () => {
     setIsVisible(false);
     if (onComplete) {
-      onComplete();
+      setTimeout(onComplete, 300);
     }
   };
 
@@ -44,7 +46,51 @@ const LoadingAnimation = ({ onComplete }) => {
             Your browser does not support the video tag.
           </video>
         ) : (
-          <div className="loading-video-fallback">AUTOX</div>
+          // Lightweight SVG fallback for ultra-fast loading
+          <svg
+            className="neon-loader"
+            viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Rotating outer ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r="90"
+              fill="none"
+              stroke="#ffff00"
+              strokeWidth="2"
+              opacity="0.3"
+              className="loader-circle outer"
+            />
+
+            {/* Rotating inner ring */}
+            <circle
+              cx="100"
+              cy="100"
+              r="60"
+              fill="none"
+              stroke="#ffff00"
+              strokeWidth="2"
+              className="loader-circle inner"
+              strokeLinecap="round"
+              strokeDasharray="94 188"
+            />
+
+            {/* Center text */}
+            <text
+              x="100"
+              y="110"
+              textAnchor="middle"
+              fontSize="28"
+              fontWeight="bold"
+              fill="#ffff00"
+              className="loader-text"
+              style={{ letterSpacing: '3px' }}
+            >
+              AUTOX
+            </text>
+          </svg>
         )}
       </div>
     </div>
