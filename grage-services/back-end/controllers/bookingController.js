@@ -347,6 +347,21 @@ const createBooking = async (req, res, next) => {
       return !isNaN(numServiceId) && serviceId !== '' ? numServiceId : serviceId;
     })();
     
+    // Prevent duplicate bookings: look for a recent pending booking with same user/service/scheduledAt/vehicle
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const duplicateFilter = {
+      userId: currentUserId || null,
+      serviceId: parsedServiceId,
+      scheduledAt: scheduledAt || null,
+      vehicleNumber: vehicleNumber || null,
+      createdAt: { $gte: tenMinutesAgo },
+    };
+
+    const existing = await db.collection('bookings').findOne(duplicateFilter);
+    if (existing) {
+      return res.status(200).json({ success: true, message: 'Booking already exists', data: existing });
+    }
+
     const booking = {
       id: await getNextBookingId(db),
       userId: currentUserId,
@@ -462,6 +477,21 @@ const createBookingPublic = async (req, res, next) => {
     const numericUserId = Number(userId);
     const resolvedUserId = Number.isFinite(numericUserId) && numericUserId > 0 ? numericUserId : null;
     const resolvedPaymentStatus = String(paymentStatus || '').trim().toLowerCase();
+
+    // Prevent duplicate public bookings: match by email/serviceName/scheduledAt/vehicle created recently
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const duplicateFilter = {
+      email: (email || '').toLowerCase() || (String(userObjectId || userId || '') || '').toLowerCase(),
+      serviceName: serviceName || null,
+      scheduledAt: scheduledAt || null,
+      vehicleNumber: vehicleNumber || null,
+      createdAt: { $gte: tenMinutesAgo },
+    };
+
+    const existing = await db.collection('bookings').findOne(duplicateFilter);
+    if (existing) {
+      return res.status(200).json({ success: true, message: 'Booking already exists', data: existing });
+    }
 
     const booking = {
       id: await getNextBookingId(db),
