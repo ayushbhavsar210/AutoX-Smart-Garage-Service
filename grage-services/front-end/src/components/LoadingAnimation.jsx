@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LoadingAnimation.css';
 
-const LoadingAnimation = ({ onComplete, autoHideMs = 750, fadeOutMs = 300 }) => {
+const LoadingAnimation = ({ onComplete, autoHideMs = 750, fadeOutMs = 300, svgOnly = false }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
   const animationVideoSrc = '/img/web-images/animation/loading.mp4';
@@ -30,10 +30,12 @@ const LoadingAnimation = ({ onComplete, autoHideMs = 750, fadeOutMs = 300 }) => 
 
   if (!isVisible) return null;
 
+  const useSvgLoader = svgOnly || videoFailed;
+
   return (
     <div className="loading-animation-overlay">
       <div className="loading-video-container">
-        {!videoFailed ? (
+        {!useSvgLoader ? (
           <video
             autoPlay
             playsInline

@@ -220,7 +220,7 @@ function App() {
         <AuthProvider>
           <NotificationProvider>
             <BillingProvider>
-              {showLoading && <LoadingAnimation onComplete={handleLoadingComplete} autoHideMs={null} />}
+              {showLoading && <LoadingAnimation onComplete={handleLoadingComplete} autoHideMs={500} svgOnly={true} />}
               <div className="app">
                 {/* Navbar - Always visible */}
                 <Navbar />
